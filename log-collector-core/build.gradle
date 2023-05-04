@@ -1,0 +1,13 @@
+jar.enabled=true
+bootJar.enabled=false
+
+dependencies {
+    compile 'org.openjdk.jol:jol-core'
+    compile 'org.slf4j:slf4j-api'
+    compile 'org.apache.commons:commons-lang3'
+    compile 'com.fasterxml.jackson.core:jackson-databind'
+    compile 'jakarta.json:jakarta.json-api'
+    compileOnly 'co.elastic.clients:elasticsearch-java'
+    compileOnly 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+}

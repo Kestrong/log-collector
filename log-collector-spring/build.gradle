@@ -1,0 +1,12 @@
+jar.enabled = true
+bootJar.enabled = false
+
+dependencies {
+    compile project(':log-collector-core')
+    compile 'org.aspectj:aspectjweaver'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    compileOnly 'org.springframework:spring-aop'
+    compileOnly 'org.springframework:spring-web'
+    compileOnly 'org.springframework:spring-context'
+    compileOnly 'org.apache.httpcomponents:httpclient'
+}

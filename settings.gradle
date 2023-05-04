@@ -1,0 +1,5 @@
+rootProject.name = 'log-collector'
+include 'log-collector-core'
+include 'log-collector-spring'
+include 'log-collector-spring-boot-starter'
+

@@ -1,0 +1,138 @@
+spring:
+  application:
+    name: test-log-collector
+  datasource:
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 10
+      connection-timeout: 5000
+
+ribbon:
+  ReadTimeout: 5000
+  SocketTimeout: 5000
+
+feign:
+  hystrix:
+    enabled: true
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+hystrix:
+  threadpool:
+    default:
+      # 并发执行的最大线程数，默认10
+      coreSize: 100
+      # BlockingQueue的最大队列数
+      maxQueueSize: 1000
+      # 即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+      queueSizeRejectionThreshold: 800
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+
+
+log:
+  collector:
+    enable: true #是否启用 默认true
+    application: ${spring.application.name} #应用的名称
+    defaultCollectorType: common #默认收集器的类型 内置默认可选类型[noop|common|database|http|es|feign]
+    ignore-properties: #json序列化时忽略的属性
+    clean-up: true #是否定时清理日志 仅databse和es支持 默认false
+    max-history: 30 #日志保留天数 大于0时生效 默认30
+    filter:
+      enable: true #是否开启全局过滤器 生成链路id 默认false
+      request-id-head-name: X-Request-Id #链路id的请求头名称 默认X-Request-Id
+      user-token-head-name: Authorization #用户信息的请求头名称 默认Authorization
+      user-property-name: userId #用户id的属性名称 默认userId
+      user-id-retriever: com.xjbg.log.collector.retriever.Base64JsonTokenUserIdRetriever #提取用户信息中的用户id值的类，默认NULL
+      allowed-headers: #允许传递给其他服务的请求头 默认空
+        - User-Agent
+      order: -1 #过滤器优先级 如果是网关需要小于-1才能拿到返回值
+      log-paths: #配置之后对匹配的路径自动记录日志 默认为空不启用
+        - Ant:/user/**
+        - Rex:.*/user/.*
+      exclude-paths: #忽略的请求路径 优先于上面的log-paths
+        - Ant:/user/download
+        - Ant:/user/file
+      consume-media-type: #过滤器如果配置记录日志 此配置用于判断content-type符合才记录request和response的body
+        - application/json
+    pointcut: execution(public * com.xjbg.log.collector.starter.example.*.*(..)) #统一拦截的切面 默认空不生效
+    database:
+      #共同属性
+      enable: true #是否启用 默认false
+      channel:
+        channelClass: #自定义队列的全限定类名（需要有默认构造方法）
+        capacity: #队列容量的记录大小 默认10000
+        byteCapacity: #队列容量的内存大小 默认8M
+        byteSpeed: #bps 每秒字节数 默认1M
+        recordSpeed: 100 #tps 每秒记录数 默认1000
+        flowControlInterval: 1000 #间隔多久检查一次流量 默认3000 单位：毫秒
+      fallbackCollector: #当收集器发送错误时降级处理的处理器类型
+      poolSize: 10 #开启线程池 默认0不开启
+      rejectPolicy: discard_oldest #队列拒绝策略 默认noop不丢失阻塞等待 可选[noop|fallback|caller_runs|discard|discard_oldest]
+      logTransformerImpl: #自定义日志信息转换器 可以是spring的beanName 或者 全限定类名（需要有默认构造方法） 默认不处理
+      properties:
+        key: value
+      #个性化属性
+      tableName: log_info #日志表名 默认log_info
+      wrapper: '`' #用来包裹表名或字段名的符号 默认空
+    http:
+      enable: true
+      #省略共同属性
+      url: https://www.12306.cn/mormhweb/?a=b #请求的地址
+      charset: utf-8 #编码
+      method: post #请求方法 默认post 可选[post|put]
+      tokenHeaderCreator: #自定义http收集器的请求头 可以是spring的beanName 或者 全限定类名（需要有默认构造方法） 默认不处理
+      json:
+        naming-strategy: camel_case #属性命名策略 默认camel_case小写驼峰 可选[camel_case|snake_case|upper_snake_case|upper_camel_case|kebab_case]
+        dateFormat: #时间格式化 默认yyyy-MM-dd HH:mm:ss
+      connection:
+        connectTimeout: 5000
+        socketTimeout: 30000
+        requestTimeout: 5000
+        maxConnect: 60
+        maxConnectPerRoute: 30
+        ignoreHttps: true #忽略https不提倡生产使用 默认false
+        certFile: #服务器证书路径
+    es:
+      enable: true
+      #省略共同属性
+      version: 7 #版本 默认7 可选[7|8]
+      index: log_info_index #索引名称 默认log_info_index
+      hosts: ${es.hosts} #ip端口信息 多个用,分开
+      schema: http
+      clusterName: es-cluster
+      username: ${es.userName}
+      password: ${es.password}
+      json:
+        naming-strategy: upper_snake_case
+        dateFormat:
+      connection:
+        connectTimeout: 5000
+        socketTimeout: 30000
+        requestTimeout: 5000
+        maxConnect: 60
+        maxConnectPerRoute: 30
+        ignoreHttps: false
+        certFile:
+    feign:
+      enable: true
+      #省略共同属性
+      method: post #请求方法 默认post 可选[post|put]
+      name: ${spring.application.name} #微服务注册中心实例名称
+      path: /user/log-info #接口
+      url: http://localhost:8080 #请求地址 默认为空使用name去解析
+
+logging:
+  level:
+    com.xjbg.log.collector: debug
