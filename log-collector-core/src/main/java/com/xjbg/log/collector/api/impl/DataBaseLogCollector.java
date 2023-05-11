@@ -95,7 +95,7 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
     }
 
     @Override
-    protected void doLog(LogInfo logInfo) throws Exception {
+    protected void doLog(List<LogInfo> logInfos) throws Exception {
         Connection conn = null;
         Boolean connAutoCommit = null;
         PreparedStatement preparedStatement = null;
@@ -103,43 +103,46 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
             conn = dataSource.getConnection();
             connAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            int index = 1;
             preparedStatement = conn.prepareStatement(getInsertSqlTemplate());
-            preparedStatement.setString(index++, logInfo.getLogId());
-            preparedStatement.setString(index++, logInfo.getUserId());
-            preparedStatement.setString(index++, logInfo.getBusinessNo());
-            preparedStatement.setString(index++, logInfo.getApplication());
-            preparedStatement.setString(index++, logInfo.getModule());
-            preparedStatement.setString(index++, logInfo.getAction());
-            preparedStatement.setString(index++, logInfo.getState());
-            preparedStatement.setString(index++, logInfo.getType());
-            preparedStatement.setString(index++, logInfo.getHandleMethod());
-            preparedStatement.setString(index++, logInfo.getUserAgent());
-            preparedStatement.setString(index++, logInfo.getRequestId());
-            preparedStatement.setString(index++, logInfo.getRequestIp());
-            preparedStatement.setString(index++, logInfo.getRequestUrl());
-            preparedStatement.setString(index++, logInfo.getRequestMethod());
-            preparedStatement.setTimestamp(index++, logInfo.getRequestTime() == null ? null : new Timestamp(logInfo.getRequestTime().getTime()));
-            preparedStatement.setTimestamp(index++, logInfo.getCreateTime() == null ? null : new Timestamp(logInfo.getCreateTime().getTime()));
-            preparedStatement.setTimestamp(index++, logInfo.getResponseTime() == null ? null : new Timestamp(logInfo.getResponseTime().getTime()));
-            String params = JsonLogUtil.toJson(logInfo.getParams());
-            try {
-                preparedStatement.setString(index, params);
-            } catch (SQLException e) {
-                try (Reader reader = new StringReader(params)) {
-                    preparedStatement.setCharacterStream(index, reader);
+            for (LogInfo logInfo : logInfos) {
+                int index = 1;
+                preparedStatement.setString(index++, logInfo.getLogId());
+                preparedStatement.setString(index++, logInfo.getUserId());
+                preparedStatement.setString(index++, logInfo.getBusinessNo());
+                preparedStatement.setString(index++, logInfo.getApplication());
+                preparedStatement.setString(index++, logInfo.getModule());
+                preparedStatement.setString(index++, logInfo.getAction());
+                preparedStatement.setString(index++, logInfo.getState());
+                preparedStatement.setString(index++, logInfo.getType());
+                preparedStatement.setString(index++, logInfo.getHandleMethod());
+                preparedStatement.setString(index++, logInfo.getUserAgent());
+                preparedStatement.setString(index++, logInfo.getRequestId());
+                preparedStatement.setString(index++, logInfo.getRequestIp());
+                preparedStatement.setString(index++, logInfo.getRequestUrl());
+                preparedStatement.setString(index++, logInfo.getRequestMethod());
+                preparedStatement.setTimestamp(index++, logInfo.getRequestTime() == null ? null : new Timestamp(logInfo.getRequestTime().getTime()));
+                preparedStatement.setTimestamp(index++, logInfo.getCreateTime() == null ? null : new Timestamp(logInfo.getCreateTime().getTime()));
+                preparedStatement.setTimestamp(index++, logInfo.getResponseTime() == null ? null : new Timestamp(logInfo.getResponseTime().getTime()));
+                String params = JsonLogUtil.toJson(logInfo.getParams());
+                try {
+                    preparedStatement.setString(index, params);
+                } catch (SQLException e) {
+                    try (Reader reader = new StringReader(params)) {
+                        preparedStatement.setCharacterStream(index, reader);
+                    }
                 }
-            }
-            index++;
-            String response = JsonLogUtil.toJson(logInfo.getResponse());
-            try {
-                preparedStatement.setString(index, response);
-            } catch (SQLException e) {
-                try (Reader reader = new StringReader(response)) {
-                    preparedStatement.setCharacterStream(index, reader);
+                index++;
+                String response = JsonLogUtil.toJson(logInfo.getResponse());
+                try {
+                    preparedStatement.setString(index, response);
+                } catch (SQLException e) {
+                    try (Reader reader = new StringReader(response)) {
+                        preparedStatement.setCharacterStream(index, reader);
+                    }
                 }
+                preparedStatement.addBatch();
             }
-            preparedStatement.execute();
+            preparedStatement.executeLargeBatch();
             conn.commit();
         } catch (Exception e) {
             if (conn != null) {

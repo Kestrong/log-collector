@@ -3,6 +3,7 @@ package com.xjbg.log.collector.api;
 import com.xjbg.log.collector.model.LogInfo;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author kesc
@@ -23,6 +24,13 @@ public interface LogCollector<T extends LogInfo> {
      * @param logInfo log info
      */
     void log(T logInfo);
+
+    /**
+     * log batch in sync mode
+     *
+     * @param logInfos log info
+     */
+    void logBatch(List<T> logInfos);
 
     /**
      * log in async mode

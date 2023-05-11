@@ -178,6 +178,9 @@ public class LogCollectorAutoConfiguration {
         if (StringUtils.hasText(customProperties.getFallbackCollector())) {
             abstractLogCollector.setFallbackCollector(customProperties.getFallbackCollector());
         }
+        if (customProperties.getBatchSize() != null && customProperties.getBatchSize() > 0) {
+            abstractLogCollector.setBatchSize(customProperties.getBatchSize());
+        }
         if (customProperties.getPoolSize() != null && customProperties.getPoolSize() > 0) {
             abstractLogCollector.setPoolSize(customProperties.getPoolSize());
         }
@@ -208,6 +211,12 @@ public class LogCollectorAutoConfiguration {
             }
             if (channelProperties.getFlowControlInterval() != null) {
                 abstractLogCollector.getChannel().setFlowControlInterval(channelProperties.getFlowControlInterval());
+            }
+            if (channelProperties.getThreshold() != null && channelProperties.getThreshold() > 0) {
+                if (channelProperties.getThreshold() < 0.5f || channelProperties.getThreshold() > 0.9f) {
+                    log.warn("remain threshold is suggested [0.5,0.9], you set {}", channelProperties.getThreshold());
+                }
+                abstractLogCollector.getChannel().setThreshold(Math.min(channelProperties.getThreshold(), 1.0f));
             }
         }
     }

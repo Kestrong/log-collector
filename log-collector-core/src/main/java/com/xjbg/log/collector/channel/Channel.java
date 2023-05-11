@@ -34,6 +34,8 @@ public abstract class Channel<T extends LogInfo> {
 
     protected volatile long flowControlInterval;
 
+    protected volatile float threshold;
+
     protected volatile AtomicLong totalBytes = new AtomicLong(0);
 
     protected volatile AtomicLong totalRecords = new AtomicLong(0);
@@ -41,15 +43,16 @@ public abstract class Channel<T extends LogInfo> {
     protected volatile long lastTimestamp = -1;
 
     public Channel() {
-        this(10000, 8 * 1024 * 1024, 1024 * 1024, 1000, 3000);
+        this(10000, 8 * 1024 * 1024, 1024 * 1024, 1000, 3000, 0.8f);
     }
 
-    public Channel(int capacity, int byteCapacity, long byteSpeed, long recordSpeed, long flowControlInterval) {
+    public Channel(int capacity, int byteCapacity, long byteSpeed, long recordSpeed, long flowControlInterval, float threshold) {
         this.capacity = capacity;
         this.byteCapacity = byteCapacity;
         this.byteSpeed = byteSpeed;
         this.recordSpeed = recordSpeed;
         this.flowControlInterval = flowControlInterval;
+        this.threshold = threshold;
 
         if (capacity <= 0) {
             throw new IllegalArgumentException(String.format(

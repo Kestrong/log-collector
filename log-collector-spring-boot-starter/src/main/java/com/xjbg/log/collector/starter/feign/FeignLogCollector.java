@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 /**
  * @author kesc
  * @since 2023-04-20 9:24
@@ -27,12 +30,21 @@ public class FeignLogCollector extends AbstractLogCollector<LogInfo, Object> {
     }
 
     @Override
-    protected void doLog(Object logInfo) throws Exception {
-        if (RequestMethod.PUT.name().equalsIgnoreCase(method)) {
-            feignLogCollectorClient.sendLogPut(logInfo);
+    protected void doLog(List<Object> logInfos) throws Exception {
+        Consumer<Object> consumer = logInfo -> {
+            if (RequestMethod.PUT.name().equalsIgnoreCase(method)) {
+                feignLogCollectorClient.sendLogPut(logInfo);
+            } else {
+                feignLogCollectorClient.sendLogPost(logInfo);
+            }
+            log.debug("send log to {}, body:{}", feignLogCollectorClient, logInfo);
+        };
+        if (getBatchSize() > 1) {
+            consumer.accept(logInfos);
         } else {
-            feignLogCollectorClient.sendLogPost(logInfo);
+            for (Object logInfo : logInfos) {
+                consumer.accept(logInfo);
+            }
         }
-        log.debug("send log to {}, body:{}", feignLogCollectorClient, logInfo);
     }
 }

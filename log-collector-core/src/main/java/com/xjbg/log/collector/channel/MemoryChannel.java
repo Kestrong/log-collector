@@ -17,8 +17,8 @@ public class MemoryChannel<T extends LogInfo> extends Channel<T> {
         this.queue = new LinkedBlockingQueue<>(this.getCapacity());
     }
 
-    public MemoryChannel(int capacity, int byteCapacity, long byteSpeed, long recordSpeed, long flowControlInterval) {
-        super(capacity, byteCapacity, byteSpeed, recordSpeed, flowControlInterval);
+    public MemoryChannel(int capacity, int byteCapacity, long byteSpeed, long recordSpeed, long flowControlInterval, float threshold) {
+        super(capacity, byteCapacity, byteSpeed, recordSpeed, flowControlInterval, threshold);
         this.queue = new LinkedBlockingQueue<>(this.getCapacity());
     }
 

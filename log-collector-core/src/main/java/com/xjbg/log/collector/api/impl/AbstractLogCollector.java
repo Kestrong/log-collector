@@ -15,8 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +31,8 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
     private Channel<T> channel;
     private LogTransformer<T, R> logTransformer;
     private RejectPolicy rejectPolicy = RejectPolicy.NOOP;
+    private int batchSize = 1;
+    protected final List<T> buffer = new ArrayList<>();
     protected Thread scheduleThread;
     private int poolSize = 0;
     protected ThreadPoolExecutor pool;
@@ -47,13 +48,13 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
         logTransformer = new DefaultLogTransformer<>();
     }
 
-    protected abstract void doLog(R logInfo) throws Exception;
+    protected abstract void doLog(List<R> logInfos) throws Exception;
 
     protected R doTransform(T logInfo) {
         return getLogTransformer().transform(logInfo);
     }
 
-    protected void completeLogInfo(T logInfo) {
+    protected T completeLogInfo(T logInfo) {
         if (StringUtils.isBlank(logInfo.getLogId())) {
             logInfo.setLogId(UUID.randomUUID().toString());
         }
@@ -67,16 +68,39 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
             logInfo.setApplication(LogCollectorConstant.APPLICATION);
         }
         logInfo.setCreateTime(new Date());
+        return logInfo;
     }
 
     @Override
     public void log(T logInfo) {
         try {
             completeLogInfo(logInfo);
-            doLog(doTransform(logInfo));
+            doLog(Collections.singletonList(doTransform(logInfo)));
         } catch (Exception e) {
             log.warn("log occur error, the reason maybe: {}", e.getMessage());
             logAsyncFallback(logInfo);
+        }
+    }
+
+    @Override
+    public void logBatch(List<T> logInfos) {
+        List<R> transformLogs = new ArrayList<>();
+        for (T logInfo : logInfos) {
+            try {
+                transformLogs.add(doTransform(completeLogInfo(logInfo)));
+            } catch (Exception e) {
+                log.warn("log transform error, the reason maybe: {}", e.getMessage());
+                logAsyncFallback(logInfo);
+                logInfos.remove(logInfo);
+            }
+        }
+        try {
+            doLog(transformLogs);
+        } catch (Exception e) {
+            log.warn("log batch occur error, the reason maybe: {}", e.getMessage());
+            if (getBatchSize() > 1) {
+                logInfos.forEach(this::log);
+            }
         }
     }
 
@@ -85,14 +109,18 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
             try {
                 getFallbackCollector().logAsync(logInfo);
             } catch (Exception e) {
-                //ignore
+                log.debug("log fallback fail", e);
             }
         }
     }
 
+    protected boolean isExceedThreadHold() {
+        return channel.size() >= channel.getCapacity() * channel.getThreshold();
+    }
+
     @Override
     public void logAsync(T logInfo) {
-        if (channel.size() >= channel.getCapacity()) {
+        if (isExceedThreadHold()) {
             RejectPolicy rejectPolicy = getRejectPolicy();
             if (RejectPolicy.CALLER_RUNS.equals(rejectPolicy)) {
                 log(logInfo);
@@ -162,20 +190,25 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
                                 //ignore
                             }
                         }
-                        if (pool != null) {
-                            pool.execute(() -> {
-                                try {
-                                    log(channel.pull());
-                                } catch (Exception e) {
-                                    log.error(e.getMessage());
-                                }
-                            });
-                        } else {
-                            log(channel.pull());
+                        if (buffer.size() < getBatchSize()) {
+                            buffer.add(channel.pull());
+                        }
+                        if (buffer.size() >= getBatchSize()) {
+                            List<T> temp = new ArrayList<>(buffer);
+                            if (pool != null) {
+                                pool.execute(() -> logBatch(temp));
+                            } else {
+                                logBatch(temp);
+                            }
+                            buffer.clear();
                         }
                     } catch (Exception e) {
                         log.error(e.getMessage());
                     }
+                }
+                if (buffer.size() > 0) {
+                    logBatch(new ArrayList<>(buffer));
+                    buffer.clear();
                 }
                 log.info("{} collector stop collecting log.", type());
             });
@@ -272,6 +305,13 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
         this.poolSize = poolSize;
     }
 
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
 
     public static abstract class None implements LogCollector<LogInfo> {
 

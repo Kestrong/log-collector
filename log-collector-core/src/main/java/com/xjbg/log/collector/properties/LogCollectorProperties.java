@@ -97,6 +97,10 @@ public class LogCollectorProperties {
          * time period to check speed, default to 3000
          */
         private Integer flowControlInterval;
+        /**
+         * threshold to trigger reject policy, suggest [0.5,0.9], default 0.8
+         */
+        private Float threshold;
     }
 
     @Getter
@@ -123,6 +127,7 @@ public class LogCollectorProperties {
         private boolean enable = false;
         private String fallbackCollector;
         private Integer poolSize;
+        private Integer batchSize;
         private RejectPolicy rejectPolicy;
         /**
          * customized log transformer impl, can be a bean name or class name

@@ -18,6 +18,7 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -84,8 +85,14 @@ public class HttpLogCollector extends AbstractJsonLogCollector<LogInfo, Object> 
     }
 
     @Override
-    protected void doLog(Object logInfo) throws Exception {
-        execute(getUrl(), logInfo);
+    protected void doLog(List<Object> logInfos) throws Exception {
+        if (getBatchSize() > 1) {
+            execute(getUrl(), logInfos);
+        } else {
+            for (Object logInfo : logInfos) {
+                execute(getUrl(), logInfo);
+            }
+        }
     }
 
 }
