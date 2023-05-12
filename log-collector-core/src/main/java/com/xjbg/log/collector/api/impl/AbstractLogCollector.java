@@ -98,9 +98,7 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
             doLog(transformLogs);
         } catch (Exception e) {
             log.warn("log batch occur error, the reason maybe: {}", e.getMessage());
-            if (getBatchSize() > 1) {
-                logInfos.forEach(this::log);
-            }
+            logInfos.forEach(this::logAsyncFallback);
         }
     }
 

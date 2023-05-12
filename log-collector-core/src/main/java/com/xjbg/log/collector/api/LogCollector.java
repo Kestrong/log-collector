@@ -43,6 +43,7 @@ public interface LogCollector<T extends LogInfo> {
      * clean log
      *
      * @param before clean logs before the date
+     * @throws Exception e
      */
     void cleanLog(Date before) throws Exception;
 

@@ -29,7 +29,6 @@ public class Es7LogCollector extends AbstractEsLogCollector {
     }
 
     @Override
-    @SuppressWarnings("all")
     protected void doLog(List<LogInfo> logInfos) throws Exception {
         BulkRequest bulkRequest = new BulkRequest();
         for (LogInfo logInfo : logInfos) {
