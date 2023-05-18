@@ -72,18 +72,20 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
     }
 
     @Override
-    public void log(T logInfo) {
+    public boolean log(T logInfo) {
         try {
             completeLogInfo(logInfo);
             doLog(Collections.singletonList(doTransform(logInfo)));
+            return true;
         } catch (Exception e) {
             log.warn("log occur error, the reason maybe: {}", e.getMessage());
             logAsyncFallback(logInfo);
+            return false;
         }
     }
 
     @Override
-    public void logBatch(List<T> logInfos) {
+    public boolean logBatch(List<T> logInfos) {
         List<R> transformLogs = new ArrayList<>();
         for (T logInfo : logInfos) {
             try {
@@ -96,9 +98,11 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
         }
         try {
             doLog(transformLogs);
+            return true;
         } catch (Exception e) {
             log.warn("log batch occur error, the reason maybe: {}", e.getMessage());
             logInfos.forEach(this::logAsyncFallback);
+            return false;
         }
     }
 

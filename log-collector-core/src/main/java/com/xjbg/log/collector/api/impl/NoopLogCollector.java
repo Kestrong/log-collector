@@ -28,8 +28,9 @@ public class NoopLogCollector extends AbstractLogCollector<LogInfo, LogInfo> {
     }
 
     @Override
-    public void log(LogInfo logInfo) {
+    public boolean log(LogInfo logInfo) {
         doLog(Collections.singletonList(logInfo));
+        return true;
     }
 
     @Override

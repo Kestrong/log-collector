@@ -22,15 +22,17 @@ public interface LogCollector<T extends LogInfo> {
      * log in sync mode
      *
      * @param logInfo log info
+     * @return true/false
      */
-    void log(T logInfo);
+    boolean log(T logInfo);
 
     /**
      * log batch in sync mode
      *
      * @param logInfos log info
+     * @return true/false
      */
-    void logBatch(List<T> logInfos);
+    boolean logBatch(List<T> logInfos);
 
     /**
      * log in async mode
