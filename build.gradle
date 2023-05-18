@@ -10,7 +10,6 @@ buildscript {
 
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.1.7.RELEASE'
-        classpath 'org.flywaydb:flyway-gradle-plugin:6.3.3'
     }
 }
 
