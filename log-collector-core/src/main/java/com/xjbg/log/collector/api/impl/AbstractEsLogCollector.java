@@ -1,10 +1,9 @@
 package com.xjbg.log.collector.api.impl;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.xjbg.log.collector.enums.CollectorType;
 import com.xjbg.log.collector.enums.NamingStrategy;
 import com.xjbg.log.collector.model.LogInfo;
+import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,30 +23,7 @@ public abstract class AbstractEsLogCollector extends AbstractJsonLogCollector<Lo
     }
 
     protected String getTimeFieldName() {
-        String timeField;
-        switch (getNamingStrategy()) {
-            case UPPER_CAMEL_CASE:
-                timeField = "CreateTime";
-                break;
-            case UPPER_SNAKE_CASE:
-                try {
-                    PropertyNamingStrategy upperSnakeCase = PropertyNamingStrategies.UPPER_SNAKE_CASE;
-                    timeField = "CREATE_TIME";
-                    break;
-                } catch (Error e) {
-                    //ignore
-                }
-            case SNAKE_CASE:
-                timeField = "create_time";
-                break;
-            case KEBAB_CASE:
-                timeField = "create-time";
-                break;
-            default:
-                timeField = "createTime";
-                break;
-        }
-        return timeField;
+        return JsonLogUtil.translate("createTime", getNamingStrategy());
     }
 
 }

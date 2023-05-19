@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.xjbg.log.collector.enums.NamingStrategy;
 import com.xjbg.log.collector.sensitive.SensitiveLogAnnotationIntrospector;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,51 @@ public class JsonLogUtil {
             return (String) o;
         }
         return objectMapper.writeValueAsString(o);
+    }
+
+    public static String translate(String name, NamingStrategy namingStrategy) {
+        String translateName;
+        switch (namingStrategy) {
+            case UPPER_CAMEL_CASE:
+                try {
+                    translateName = PropertyNamingStrategies.UpperCamelCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = new PropertyNamingStrategy.UpperCamelCaseStrategy().translate(name);
+                }
+                break;
+            case UPPER_SNAKE_CASE:
+                try {
+                    translateName = PropertyNamingStrategies.UpperSnakeCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = new PropertyNamingStrategy.SnakeCaseStrategy().translate(name);
+                    if (translateName != null) {
+                        translateName = translateName.toUpperCase();
+                    }
+                }
+                break;
+            case SNAKE_CASE:
+                try {
+                    translateName = PropertyNamingStrategies.SnakeCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = new PropertyNamingStrategy.SnakeCaseStrategy().translate(name);
+                }
+                break;
+            case KEBAB_CASE:
+                try {
+                    translateName = PropertyNamingStrategies.KebabCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = new PropertyNamingStrategy.KebabCaseStrategy().translate(name);
+                }
+                break;
+            default:
+                try {
+                    translateName = PropertyNamingStrategies.LowerCamelCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = new PropertyNamingStrategy.LowerCaseStrategy().translate(name);
+                }
+                break;
+        }
+        return translateName;
     }
 
 }
