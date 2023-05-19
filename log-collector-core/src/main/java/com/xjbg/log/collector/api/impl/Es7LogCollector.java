@@ -4,6 +4,7 @@ import com.xjbg.log.collector.model.LogInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -36,7 +37,10 @@ public class Es7LogCollector extends AbstractEsLogCollector {
             indexRequest.id(logInfo.getLogId()).index(getIndex()).source(toJsonString(logInfo), XContentType.JSON);
             bulkRequest.add(indexRequest);
         }
-        getHighLevelClient().bulk(bulkRequest, RequestOptions.DEFAULT);
+        BulkResponse bulk = getHighLevelClient().bulk(bulkRequest, RequestOptions.DEFAULT);
+        if (bulk.hasFailures()) {
+            throw new RuntimeException(bulk.buildFailureMessage());
+        }
     }
 
     @Override

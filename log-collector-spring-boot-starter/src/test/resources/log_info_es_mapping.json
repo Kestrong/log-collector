@@ -48,13 +48,8 @@
           }
         },
         "createTime": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
         },
         "handleMethod": {
           "type": "text",
@@ -111,13 +106,8 @@
           }
         },
         "requestTime": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
         },
         "requestUrl": {
           "type": "text",
@@ -138,13 +128,8 @@
           }
         },
         "responseTime": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
         },
         "state": {
           "type": "text",

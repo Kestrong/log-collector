@@ -1,8 +1,10 @@
 package com.xjbg.log.collector.model;
 
 import com.xjbg.log.collector.utils.JsonLogUtil;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -14,6 +16,8 @@ import java.util.StringJoiner;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LogInfo implements Serializable {
     private String logId;
     private String userId;
