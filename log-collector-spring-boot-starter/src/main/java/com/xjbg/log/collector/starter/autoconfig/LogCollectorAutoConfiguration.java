@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.xjbg.log.collector.LogCollectorConstant;
 import com.xjbg.log.collector.LogCollectors;
+import com.xjbg.log.collector.api.LogCollector;
 import com.xjbg.log.collector.api.impl.*;
 import com.xjbg.log.collector.channel.Channel;
 import com.xjbg.log.collector.model.LogInfo;
@@ -24,6 +25,8 @@ import com.xjbg.log.collector.transformer.LogTransformer;
 import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -44,6 +47,7 @@ import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -59,9 +63,15 @@ import java.util.Set;
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
-public class LogCollectorAutoConfiguration {
+public class LogCollectorAutoConfiguration implements ApplicationRunner {
     private final LogCollectorProperties properties;
     private final ApplicationContext applicationContext;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        Map<String, LogCollector> collectors = applicationContext.getBeansOfType(LogCollector.class);
+        collectors.values().forEach(x -> LogCollectors.register(x.type(), x));
+    }
 
     @JsonFilter("logCollectorFilter")
     static class DynamicFilter {
@@ -268,23 +278,18 @@ public class LogCollectorAutoConfiguration {
         }
     }
 
-    @RefreshScope
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true")
     @ConditionalOnMissingBean(value = NoopLogCollector.class)
     public NoopLogCollector noopLogCollector() {
-        NoopLogCollector noopLogCollector = new NoopLogCollector();
-        LogCollectors.register(noopLogCollector.type(), noopLogCollector);
-        return noopLogCollector;
+        return new NoopLogCollector();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true")
     @ConditionalOnMissingBean(value = CommonLogCollector.class)
     public CommonLogCollector commonLogCollector() {
-        CommonLogCollector commonLogCollector = new CommonLogCollector();
-        LogCollectors.register(commonLogCollector.type(), commonLogCollector);
-        return commonLogCollector;
+        return new CommonLogCollector();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -300,7 +305,6 @@ public class LogCollectorAutoConfiguration {
         if (StringUtils.hasText(properties.getDatabase().getTableName())) {
             dataBaseLogCollector.setTableName(properties.getDatabase().getTableName());
         }
-        LogCollectors.register(dataBaseLogCollector.type(), dataBaseLogCollector);
         return dataBaseLogCollector;
     }
 
@@ -327,7 +331,6 @@ public class LogCollectorAutoConfiguration {
                 httpLogCollector.setTokenCreator((IHttpTokenCreator) getBean(properties.getHttp().getTokenHeaderCreator()));
                 httpLogCollector.getTokenCreator().afterProperties(properties.getHttp().getProperties());
             }
-            LogCollectors.register(httpLogCollector.type(), httpLogCollector);
             return httpLogCollector;
         }
 

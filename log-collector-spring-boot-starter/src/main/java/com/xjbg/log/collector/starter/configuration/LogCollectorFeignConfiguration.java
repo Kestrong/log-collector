@@ -1,13 +1,12 @@
 package com.xjbg.log.collector.starter.configuration;
 
-import com.xjbg.log.collector.LogCollectors;
+import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
 import com.xjbg.log.collector.starter.autoconfig.LogCollectorAutoConfiguration;
 import com.xjbg.log.collector.starter.feign.FeignLogCollector;
 import com.xjbg.log.collector.starter.feign.FeignLogCollectorClient;
 import com.xjbg.log.collector.starter.feign.LogCollectorHystrixConcurrencyStrategy;
 import com.xjbg.log.collector.starter.feign.LogCollectorRequestInterceptor;
-import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +69,6 @@ public class LogCollectorFeignConfiguration {
             if (StringUtils.hasText(propertiesFeign.getMethod())) {
                 feignLogCollector.setMethod(propertiesFeign.getMethod());
             }
-            LogCollectors.register(feignLogCollector.type(), feignLogCollector);
             return feignLogCollector;
         }
 

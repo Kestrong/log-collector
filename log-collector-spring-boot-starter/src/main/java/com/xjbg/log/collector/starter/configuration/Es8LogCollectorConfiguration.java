@@ -4,11 +4,10 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xjbg.log.collector.LogCollectors;
 import com.xjbg.log.collector.api.impl.Es8LogCollector;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
-import com.xjbg.log.collector.starter.autoconfig.LogCollectorAutoConfiguration;
 import com.xjbg.log.collector.spring.utils.LogHttpUtil;
+import com.xjbg.log.collector.starter.autoconfig.LogCollectorAutoConfiguration;
 import com.xjbg.log.collector.utils.JsonLogUtil;
 import org.elasticsearch.client.RestClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,6 @@ public class Es8LogCollectorConfiguration extends LogCollectorRestClientBuilderC
         if (propertiesEs.getJson().getNamingStrategy() != null) {
             esLogCollector.setNamingStrategy(propertiesEs.getJson().getNamingStrategy());
         }
-        LogCollectors.register(esLogCollector.type(), esLogCollector);
         return esLogCollector;
     }
 

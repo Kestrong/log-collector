@@ -1,11 +1,10 @@
 package com.xjbg.log.collector.starter.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xjbg.log.collector.LogCollectors;
 import com.xjbg.log.collector.api.impl.Es7LogCollector;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
-import com.xjbg.log.collector.starter.autoconfig.LogCollectorAutoConfiguration;
 import com.xjbg.log.collector.spring.utils.LogHttpUtil;
+import com.xjbg.log.collector.starter.autoconfig.LogCollectorAutoConfiguration;
 import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.RestClientBuilder;
@@ -51,7 +50,6 @@ public class Es7LogCollectorConfiguration extends LogCollectorRestClientBuilderC
         if (propertiesEs.getJson().getNamingStrategy() != null) {
             esLogCollector.setNamingStrategy(propertiesEs.getJson().getNamingStrategy());
         }
-        LogCollectors.register(esLogCollector.type(), esLogCollector);
         return esLogCollector;
     }
 
