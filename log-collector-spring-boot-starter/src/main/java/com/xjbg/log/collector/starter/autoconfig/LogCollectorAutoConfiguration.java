@@ -20,6 +20,7 @@ import com.xjbg.log.collector.spring.utils.LogCollectorCleaner;
 import com.xjbg.log.collector.spring.utils.LogHttpUtil;
 import com.xjbg.log.collector.starter.configuration.*;
 import com.xjbg.log.collector.starter.filter.LogCollectorGatewayGlobalFilter;
+import com.xjbg.log.collector.starter.filter.LogCollectorReactiveGlobalFilter;
 import com.xjbg.log.collector.token.IHttpTokenCreator;
 import com.xjbg.log.collector.transformer.LogTransformer;
 import com.xjbg.log.collector.utils.JsonLogUtil;
@@ -28,10 +29,7 @@ import org.apache.http.client.HttpClient;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -41,6 +39,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.WebFilter;
 
 import javax.servlet.Filter;
 import javax.sql.DataSource;
@@ -109,6 +108,7 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
         refresh();
     }
 
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     @ConditionalOnMissingClass(value = "org.springframework.cloud.gateway.filter.GlobalFilter")
     @ConditionalOnClass(value = {FilterRegistrationBean.class, Filter.class})
     @Configuration
@@ -155,6 +155,30 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".filter.enable", havingValue = "true")
         public LogCollectorGatewayGlobalFilter logCollectorGlobalFilter() throws ReflectiveOperationException {
             LogCollectorGatewayGlobalFilter logCollectorGlobalFilter = new LogCollectorGatewayGlobalFilter(properties);
+            if (StringUtils.hasText(properties.getFilter().getUserIdRetriever())) {
+                logCollectorGlobalFilter.setUserIdRetriever((UserIdRetriever) getBean(properties.getFilter().getUserIdRetriever()));
+                if (StringUtils.hasText(properties.getFilter().getUserPropertyName())) {
+                    logCollectorGlobalFilter.getUserIdRetriever().setUserPropertyName(properties.getFilter().getUserPropertyName());
+                }
+            }
+            logCollectorGlobalFilter.setPathMatcher(new CompositeRexAntPathMatcher());
+            return logCollectorGlobalFilter;
+        }
+
+    }
+
+    @ConditionalOnClass(value = {WebFilter.class})
+    @ConditionalOnMissingClass(value = "org.springframework.cloud.gateway.filter.GlobalFilter")
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    @Configuration
+    public class LogCollectorReactiveGlobalFilterConfiguration {
+
+        @Bean(name = "logCollectorGlobalFilter")
+        @RefreshScope
+        @ConditionalOnMissingBean(name = "logCollectorGlobalFilter")
+        @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".filter.enable", havingValue = "true")
+        public LogCollectorReactiveGlobalFilter logCollectorGlobalFilter() throws ReflectiveOperationException {
+            LogCollectorReactiveGlobalFilter logCollectorGlobalFilter = new LogCollectorReactiveGlobalFilter(properties);
             if (StringUtils.hasText(properties.getFilter().getUserIdRetriever())) {
                 logCollectorGlobalFilter.setUserIdRetriever((UserIdRetriever) getBean(properties.getFilter().getUserIdRetriever()));
                 if (StringUtils.hasText(properties.getFilter().getUserPropertyName())) {

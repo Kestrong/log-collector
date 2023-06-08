@@ -12,16 +12,17 @@ import com.xjbg.log.collector.utils.UserEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.MDC;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nonnull;
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.*;
@@ -33,11 +34,11 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 
 /**
  * @author kesc
- * @since 2023-04-23 11:08
+ * @since 2023-06-08 10:47
  */
-public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalFilter implements GlobalFilter, Ordered {
+public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobalFilter implements WebFilter, Ordered {
 
-    public LogCollectorGatewayGlobalFilter(LogCollectorProperties properties) {
+    public LogCollectorReactiveGlobalFilter(LogCollectorProperties properties) {
         super(properties);
     }
 
@@ -113,7 +114,8 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
     }
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    @Nonnull
+    public Mono<Void> filter(@Nonnull ServerWebExchange exchange, @Nonnull WebFilterChain chain) {
         if (!properties.getFilter().isEnable()) {
             return chain.filter(exchange);
         }
@@ -197,5 +199,4 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
     public int getOrder() {
         return properties.getFilter().getOrder();
     }
-
 }
