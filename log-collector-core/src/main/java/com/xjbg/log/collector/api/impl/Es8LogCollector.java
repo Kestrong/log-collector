@@ -1,13 +1,18 @@
 package com.xjbg.log.collector.api.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.json.JsonData;
+import com.xjbg.log.collector.LogCollectorConstant;
 import com.xjbg.log.collector.model.LogInfo;
+import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,8 +49,11 @@ public class Es8LogCollector extends AbstractEsLogCollector {
 
     @Override
     public void cleanLog(Date before) throws Exception {
-        log.info("clean up log before:{}", before);
-        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest.Builder().index(getIndex()).query(RangeQuery.of(t -> t.field(getTimeFieldName()).lte(JsonData.of(before)))._toQuery()).build();
+        log.info("clean up application[{}]'s log before:{}", LogCollectorConstant.APPLICATION, before);
+        Query timeQuery = RangeQuery.of(t -> t.field(getTimeFieldName()).lte(JsonData.of(before)))._toQuery();
+        Query applicationQuery = TermQuery.of(t -> t.field(JsonLogUtil.translate("application", getNamingStrategy()) + ".keyword").value(LogCollectorConstant.APPLICATION))._toQuery();
+        Query query = BoolQuery.of(b -> b.filter(timeQuery, applicationQuery))._toQuery();
+        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest.Builder().index(getIndex()).query(query).build();
         getElasticsearchClient().deleteByQuery(deleteByQueryRequest);
     }
 

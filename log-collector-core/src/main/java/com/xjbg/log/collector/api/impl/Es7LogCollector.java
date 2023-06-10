@@ -1,6 +1,8 @@
 package com.xjbg.log.collector.api.impl;
 
+import com.xjbg.log.collector.LogCollectorConstant;
 import com.xjbg.log.collector.model.LogInfo;
+import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -11,6 +13,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 
 import java.util.Date;
@@ -45,10 +49,11 @@ public class Es7LogCollector extends AbstractEsLogCollector {
 
     @Override
     public void cleanLog(Date before) throws Exception {
-        log.info("clean up log before:{}", before);
+        log.info("clean up application[{}]'s log before:{}", LogCollectorConstant.APPLICATION, before);
         DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest();
-        QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.rangeQuery(getTimeFieldName()).lte(before));
+        RangeQueryBuilder timeQuery = QueryBuilders.rangeQuery(getTimeFieldName()).lte(before);
+        TermQueryBuilder applicationQuery = QueryBuilders.termQuery(JsonLogUtil.translate("application", getNamingStrategy()) + ".keyword", LogCollectorConstant.APPLICATION);
+        QueryBuilder queryBuilder = QueryBuilders.boolQuery().filter(QueryBuilders.boolQuery().must(timeQuery).must(applicationQuery));
         deleteByQueryRequest.indices(getIndex());
         deleteByQueryRequest.setQuery(queryBuilder);
         getHighLevelClient().deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
