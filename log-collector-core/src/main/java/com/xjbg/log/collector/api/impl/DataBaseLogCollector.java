@@ -142,7 +142,7 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
                 }
                 preparedStatement.addBatch();
             }
-            preparedStatement.executeLargeBatch();
+            preparedStatement.executeBatch();
             conn.commit();
         } catch (Exception e) {
             if (conn != null) {
