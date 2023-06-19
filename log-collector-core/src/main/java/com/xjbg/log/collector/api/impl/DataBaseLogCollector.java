@@ -1,5 +1,6 @@
 package com.xjbg.log.collector.api.impl;
 
+import com.xjbg.log.collector.LogCollectorConstant;
 import com.xjbg.log.collector.enums.CollectorType;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.utils.JsonLogUtil;
@@ -156,7 +157,7 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
 
     @Override
     public void cleanLog(Date before) throws Exception {
-        log.info("clean up log before:{}", before);
+        log.info("clean up application[{}]'s log before:{}", LogCollectorConstant.APPLICATION, before);
         Connection conn = null;
         Boolean connAutoCommit = null;
         PreparedStatement preparedStatement = null;
@@ -164,8 +165,9 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
             conn = dataSource.getConnection();
             connAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(String.format("delete from %s where %s <=?", wrap(getTableName()), wrap("create_time")));
+            preparedStatement = conn.prepareStatement(String.format("delete from %s where %s <=? and %s =?", wrap(getTableName()), wrap("create_time"), wrap("application")));
             preparedStatement.setTimestamp(1, new Timestamp(before.getTime()));
+            preparedStatement.setString(2, LogCollectorConstant.APPLICATION);
             preparedStatement.execute();
             conn.commit();
         } catch (Exception e) {
