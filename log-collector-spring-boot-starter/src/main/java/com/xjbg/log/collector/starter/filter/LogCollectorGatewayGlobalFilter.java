@@ -132,7 +132,7 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
                     if (StringUtils.isBlank(requestId)) {
                         requestId = UUID.randomUUID().toString();
                     }
-                    httpRequest.getHeaders().add(requestIdName, requestId);
+                    httpRequest = httpRequest.mutate().header(requestIdName, requestId).build();
                 }
                 httpResponse.getHeaders().add(requestIdName, requestId);
                 MDC.put(requestIdName, requestId);
