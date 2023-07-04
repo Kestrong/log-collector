@@ -11,6 +11,9 @@ import java.io.Writer;
 public class ExceptionUtil {
 
     public static String getTraceInfo(Throwable t) {
+        if (t == null) {
+            return null;
+        }
         try (Writer writer = new StringWriter(); PrintWriter printWriter = new PrintWriter(writer)) {
             t.printStackTrace(printWriter);
             return writer.toString();
