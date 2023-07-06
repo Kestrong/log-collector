@@ -32,7 +32,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cglib.beans.BeanMap;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -115,7 +114,6 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
     public class LogCollectorGlobalFilterConfiguration {
 
         @Bean(name = "logCollectorGlobalFilter")
-        @RefreshScope
         @ConditionalOnMissingBean(name = "logCollectorGlobalFilter")
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".filter.enable", havingValue = "true")
         public LogCollectorGlobalFilter logCollectorGlobalFilter() throws ReflectiveOperationException {
@@ -131,7 +129,6 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
         }
 
         @Bean(name = "logCollectorGlobalFilterRegistrationBean")
-        @RefreshScope
         @ConditionalOnMissingBean(name = "logCollectorGlobalFilterRegistrationBean")
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".filter.enable", havingValue = "true")
         public FilterRegistrationBean logCollectorGlobalFilterRegistrationBean() throws ReflectiveOperationException {
@@ -150,7 +147,6 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
     public class LogCollectorGatewayGlobalFilterConfiguration {
 
         @Bean(name = "logCollectorGlobalFilter")
-        @RefreshScope
         @ConditionalOnMissingBean(name = "logCollectorGlobalFilter")
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".filter.enable", havingValue = "true")
         public LogCollectorGatewayGlobalFilter logCollectorGlobalFilter() throws ReflectiveOperationException {
@@ -174,7 +170,6 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
     public class LogCollectorReactiveGlobalFilterConfiguration {
 
         @Bean(name = "logCollectorGlobalFilter")
-        @RefreshScope
         @ConditionalOnMissingBean(name = "logCollectorGlobalFilter")
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".filter.enable", havingValue = "true")
         public LogCollectorReactiveGlobalFilter logCollectorGlobalFilter() throws ReflectiveOperationException {
