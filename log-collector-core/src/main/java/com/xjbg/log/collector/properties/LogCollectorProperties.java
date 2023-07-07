@@ -51,6 +51,7 @@ public class LogCollectorProperties {
         private boolean enable = true;
         private int order = 0;
         private String requestIdHeadName = LogCollectorConstant.REQUEST_ID_HEADER;
+        private String userIdHeadName = LogCollectorConstant.USER_ID_HEADER;
         private String userTokenHeadName = LogCollectorConstant.AUTHORIZATION;
         private String userPropertyName = "userId";
         /**

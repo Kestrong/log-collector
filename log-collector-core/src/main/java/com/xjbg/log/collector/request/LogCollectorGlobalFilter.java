@@ -57,16 +57,9 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     builder.response(exception).state(LogState.FAIL.name());
                 } else {
                     byte[] content = response.getContent();
-                    builder.response(content == null || content.length == 0 ? null : new String(content))
-                            .state(response.getStatus() < 300 ? LogState.SUCCESS.name() : LogState.FAIL.name());
+                    builder.response(content == null || content.length == 0 ? null : new String(content)).state(response.getStatus() < 300 ? LogState.SUCCESS.name() : LogState.FAIL.name());
                 }
-                LogCollectors.defaultCollector().logAsync(builder
-                        .responseTime(new Date())
-                        .userAgent(LogHttpRequestUtil.getUserAgent(request))
-                        .requestUrl(LogHttpRequestUtil.getRequestURL(request))
-                        .requestMethod(LogHttpRequestUtil.getRequestMethod(request))
-                        .requestIp(LogHttpRequestUtil.getRequestIp(request))
-                        .params(JsonLogUtil.toJson(payload)).build());
+                LogCollectors.defaultCollector().logAsync(builder.responseTime(new Date()).userAgent(LogHttpRequestUtil.getUserAgent(request)).requestUrl(LogHttpRequestUtil.getRequestURL(request)).requestMethod(LogHttpRequestUtil.getRequestMethod(request)).requestIp(LogHttpRequestUtil.getRequestIp(request)).params(JsonLogUtil.toJson(payload)).build());
             } catch (Exception e) {
                 //ignore
             }
@@ -108,7 +101,9 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     }
                     httpServletRequest.addHeader(requestIdName, header);
                 }
-                ((HttpServletResponse) response).addHeader(requestIdName, header);
+                if (!httpServletResponse.containsHeader(requestIdName)) {
+                    httpServletResponse.addHeader(requestIdName, header);
+                }
                 MDC.put(requestIdName, header);
                 RequestIdHolder.setRequestId(header);
                 //do userId
@@ -123,6 +118,11 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                 }
                 String userId = userIdRetriever != null ? userIdRetriever.getUserId(token) : null;
                 if (StringUtils.isNotBlank(userId)) {
+                    String userIdHeadName = properties.getFilter().getUserIdHeadName();
+                    httpServletRequest.addHeader(userIdHeadName, userId);
+                    if (!httpServletResponse.containsHeader(userIdHeadName)) {
+                        httpServletResponse.addHeader(userIdHeadName, userId);
+                    }
                     UserEnv.setUser(userId);
                 }
             } catch (Exception e) {

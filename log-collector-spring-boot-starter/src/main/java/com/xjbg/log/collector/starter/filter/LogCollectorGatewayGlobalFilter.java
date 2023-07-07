@@ -121,76 +121,74 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String requestIdName = properties.getFilter().getRequestIdHeadName();
+        ServerHttpRequest httpRequest = exchange.getRequest().mutate().build();
+        ServerHttpResponse httpResponse = exchange.getResponse();
         try {
-            ServerHttpRequest httpRequest = exchange.getRequest().mutate().build();
-            ServerHttpResponse httpResponse = exchange.getResponse();
-            try {
-                //do requestId
-                String requestId = httpRequest.getHeaders().getFirst(requestIdName);
+            //do requestId
+            String requestId = httpRequest.getHeaders().getFirst(requestIdName);
+            if (StringUtils.isBlank(requestId)) {
+                requestId = httpRequest.getQueryParams().getFirst(requestIdName);
                 if (StringUtils.isBlank(requestId)) {
-                    requestId = httpRequest.getQueryParams().getFirst(requestIdName);
-                    if (StringUtils.isBlank(requestId)) {
-                        requestId = UUID.randomUUID().toString();
-                    }
-                    httpRequest = httpRequest.mutate().header(requestIdName, requestId).build();
+                    requestId = UUID.randomUUID().toString();
                 }
-                httpResponse.getHeaders().add(requestIdName, requestId);
-                MDC.put(requestIdName, requestId);
-                RequestIdHolder.setRequestId(requestId);
-                builder.requestId(requestId);
-                //do userId
-                String userTokenName = properties.getFilter().getUserTokenHeadName();
-                String token = httpRequest.getHeaders().getFirst(userTokenName);
-                if (StringUtils.isBlank(token)) {
-                    token = httpRequest.getQueryParams().getFirst(userTokenName);
-                }
-                String userId = userIdRetriever != null ? userIdRetriever.getUserId(token) : null;
-                if (StringUtils.isNotBlank(userId)) {
-                    UserEnv.setUser(userId);
-                    builder.userId(userId);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
+                httpRequest = httpRequest.mutate().header(requestIdName, requestId).build();
             }
-            stopWatch.stop();
-            log.debug("log collector global filter cost microseconds: {}", stopWatch.getTime(TimeUnit.MICROSECONDS));
-            //do log paths
-            Predicate<String> canConsume = this::canConsume;
-            MutableServerHttpRequestDecorator httpRequestDecorator = new MutableServerHttpRequestDecorator(httpRequest, canConsume);
-            MutableServerHttpResponseDecorator httpResponseDecorator = new MutableServerHttpResponseDecorator(httpResponse, canConsume);
-            return chain.filter(exchange.mutate().request(httpRequestDecorator).response(httpResponseDecorator).build())
-                    .doOnError(cx -> builder.state(LogState.FAIL.name()).response(ExceptionUtil.getTraceInfo(cx.getCause())))
-                    .doOnSuccess(cx -> {
-                        byte[] content = httpResponseDecorator.getContent();
-                        if (content != null && content.length > 0) {
-                            builder.response(new String(content));
-                        }
-                        HttpStatus rawStatusCode = httpResponseDecorator.getStatusCode();
-                        if (rawStatusCode != null && rawStatusCode.value() < 300) {
-                            builder.state(LogState.SUCCESS.name());
-                        } else {
-                            builder.state(LogState.FAIL.name());
-                        }
-                    }).doFinally(x -> {
-                        stopWatch.reset();
-                        stopWatch.start();
-                        URI uri = exchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
-                        if (uri != null) {
-                            builder.requestUrl(uri.toString());
-                        } else {
-                            Set<URI> uris = exchange.getAttributeOrDefault(GATEWAY_ORIGINAL_REQUEST_URL_ATTR, Collections.emptySet());
-                            String originalUri = (uris.isEmpty()) ? "Unknown" : uris.iterator().next().toString();
-                            builder.requestUrl(originalUri);
-                        }
-                        doLogPaths(builder, httpRequestDecorator);
-                        stopWatch.stop();
-                        log.debug("log path cost microseconds: {}", stopWatch.getTime(TimeUnit.MICROSECONDS));
-                    });
-        } finally {
-            MDC.remove(requestIdName);
-            RequestIdHolder.remove();
-            UserEnv.remove();
+            if (!httpResponse.getHeaders().containsKey(requestIdName)) {
+                httpResponse.getHeaders().add(requestIdName, requestId);
+            }
+            builder.requestId(requestId);
+            //do userId
+            String userTokenName = properties.getFilter().getUserTokenHeadName();
+            String token = httpRequest.getHeaders().getFirst(userTokenName);
+            if (StringUtils.isBlank(token)) {
+                token = httpRequest.getQueryParams().getFirst(userTokenName);
+            }
+            String userId = userIdRetriever != null ? userIdRetriever.getUserId(token) : null;
+            if (StringUtils.isNotBlank(userId)) {
+                String userIdHeadName = properties.getFilter().getUserIdHeadName();
+                httpRequest = httpRequest.mutate().header(userIdHeadName, userId).build();
+                if (!httpResponse.getHeaders().containsKey(userIdHeadName)) {
+                    httpResponse.getHeaders().add(userIdHeadName, userId);
+                }
+                builder.userId(userId);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
+        stopWatch.stop();
+        log.debug("log collector global filter cost microseconds: {}", stopWatch.getTime(TimeUnit.MICROSECONDS));
+        //do log paths
+        Predicate<String> canConsume = this::canConsume;
+        MutableServerHttpRequestDecorator httpRequestDecorator = new MutableServerHttpRequestDecorator(httpRequest, canConsume);
+        MutableServerHttpResponseDecorator httpResponseDecorator = new MutableServerHttpResponseDecorator(httpResponse, canConsume);
+        return chain.filter(exchange.mutate().request(httpRequestDecorator).response(httpResponseDecorator).build())
+                .doOnError(cx -> builder.state(LogState.FAIL.name()).response(ExceptionUtil.getTraceInfo(cx.getCause())))
+                .doOnSuccess(cx -> {
+                    byte[] content = httpResponseDecorator.getContent();
+                    if (content != null && content.length > 0) {
+                        builder.response(new String(content));
+                    }
+                    HttpStatus rawStatusCode = httpResponseDecorator.getStatusCode();
+                    if (rawStatusCode != null && rawStatusCode.value() < 300) {
+                        builder.state(LogState.SUCCESS.name());
+                    } else {
+                        builder.state(LogState.FAIL.name());
+                    }
+                }).doFinally(x -> {
+                    stopWatch.reset();
+                    stopWatch.start();
+                    URI uri = exchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
+                    if (uri != null) {
+                        builder.requestUrl(uri.toString());
+                    } else {
+                        Set<URI> uris = exchange.getAttributeOrDefault(GATEWAY_ORIGINAL_REQUEST_URL_ATTR, Collections.emptySet());
+                        String originalUri = (uris.isEmpty()) ? "Unknown" : uris.iterator().next().toString();
+                        builder.requestUrl(originalUri);
+                    }
+                    doLogPaths(builder, httpRequestDecorator);
+                    stopWatch.stop();
+                    log.debug("log path cost microseconds: {}", stopWatch.getTime(TimeUnit.MICROSECONDS));
+                });
     }
 
     @Override
