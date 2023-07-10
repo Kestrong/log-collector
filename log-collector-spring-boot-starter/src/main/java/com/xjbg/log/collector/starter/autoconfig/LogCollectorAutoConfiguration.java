@@ -211,7 +211,7 @@ public class LogCollectorAutoConfiguration implements ApplicationRunner {
             abstractLogCollector.setBatchSize(customProperties.getBatchSize());
         }
         if (customProperties.getPoolSize() != null && customProperties.getPoolSize() > 0) {
-            abstractLogCollector.setPoolSize(customProperties.getPoolSize());
+            abstractLogCollector.setPoolSize(Math.max(customProperties.getPoolSize(), Runtime.getRuntime().availableProcessors()));
         }
         if (customProperties.getRejectPolicy() != null) {
             abstractLogCollector.setRejectPolicy(customProperties.getRejectPolicy());
