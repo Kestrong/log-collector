@@ -26,8 +26,7 @@ import com.xjbg.log.collector.transformer.LogTransformer;
 import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -61,12 +60,12 @@ import java.util.Set;
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
-public class LogCollectorAutoConfiguration implements ApplicationRunner {
+public class LogCollectorAutoConfiguration implements InitializingBean {
     private final LogCollectorProperties properties;
     private final ApplicationContext applicationContext;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void afterPropertiesSet() {
         Map<String, LogCollector> collectors = applicationContext.getBeansOfType(LogCollector.class);
         collectors.values().forEach(x -> LogCollectors.register(x.type(), x));
     }
