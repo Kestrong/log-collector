@@ -184,7 +184,7 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
                     try {
                         while (channel.isEmpty()) {
                             try {
-                                TimeUnit.MILLISECONDS.sleep(200L);
+                                TimeUnit.MILLISECONDS.sleep(1000L);
                                 if (scheduleThreadToStop) {
                                     break LOOP;
                                 }
