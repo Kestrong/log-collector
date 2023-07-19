@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +17,6 @@ import javax.sql.DataSource;
  */
 @EnableAspectJAutoProxy(exposeProxy = true)
 @EnableDiscoveryClient
-@EnableCircuitBreaker
 @EnableFeignClients(basePackages = "com.xjbg.log.collector.starter.example.feign")
 @SpringBootApplication
 public class LogCollectorTestApplication {

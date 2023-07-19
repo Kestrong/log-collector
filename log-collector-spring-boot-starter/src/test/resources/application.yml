@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-circular-references: true
   application:
     name: test-log-collector
   datasource:
@@ -12,7 +14,7 @@ ribbon:
   SocketTimeout: 5000
 
 feign:
-  hystrix:
+  circuitbreaker:
     enabled: true
   compression:
     request:

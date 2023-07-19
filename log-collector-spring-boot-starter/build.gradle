@@ -7,7 +7,6 @@ dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-aop'
     compileOnly 'org.springframework.boot:spring-boot-autoconfigure-processor'
     compileOnly 'org.springframework.boot:spring-boot-configuration-processor'
-    compileOnly 'com.alibaba.boot:nacos-config-spring-boot-starter'
     compileOnly 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
     compileOnly 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
     compileOnly 'co.elastic.clients:elasticsearch-java'
@@ -16,6 +15,7 @@ dependencies {
     compileOnly 'io.github.openfeign:feign-httpclient'
     compileOnly 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
     compileOnly('org.springframework.cloud:spring-cloud-starter-gateway')
+    compileOnly 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
@@ -34,7 +34,9 @@ dependencies {
     testCompile 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
     testCompile 'org.springframework.cloud:spring-cloud-starter-openfeign'
     testCompile 'io.github.openfeign:feign-httpclient'
+    testCompile 'org.springframework.cloud:spring-cloud-starter-bootstrap'
     testCompile 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
     testCompile 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
     testCompile 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
+    testCompile 'org.springframework.cloud:spring-cloud-loadbalancer'
 }
