@@ -32,7 +32,7 @@ allprojects {
 
 def versionMap = [
         "springCloudVersion": "2021.0.7",
-        "springboot"        : "2.7.4",
+        "springboot"        : "2.7.12",
         "mybatisPlusVersion": "3.3.1",
         "nacos"             : "2.2.2.RELEASE",
         "es"                : "8.5.1"
