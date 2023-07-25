@@ -8,25 +8,23 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.xjbg.log.collector.LogCollectorConstant;
 import com.xjbg.log.collector.LogCollectors;
-import com.xjbg.log.collector.api.LogCollector;
 import com.xjbg.log.collector.api.impl.*;
 import com.xjbg.log.collector.channel.Channel;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
 import com.xjbg.log.collector.request.LogCollectorGlobalFilter;
 import com.xjbg.log.collector.retriever.UserIdRetriever;
+import com.xjbg.log.collector.spring.filter.LogCollectorReactiveGlobalFilter;
 import com.xjbg.log.collector.spring.utils.CompositeRexAntPathMatcher;
 import com.xjbg.log.collector.spring.utils.LogCollectorCleaner;
 import com.xjbg.log.collector.spring.utils.LogHttpUtil;
 import com.xjbg.log.collector.starter.configuration.*;
 import com.xjbg.log.collector.starter.filter.LogCollectorGatewayGlobalFilter;
-import com.xjbg.log.collector.spring.filter.LogCollectorReactiveGlobalFilter;
 import com.xjbg.log.collector.token.IHttpTokenCreator;
 import com.xjbg.log.collector.transformer.LogTransformer;
 import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -44,7 +42,6 @@ import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -56,19 +53,14 @@ import java.util.Set;
         Es8LogCollectorConfiguration.class,
         Es7LogCollectorConfiguration.class,
         LogCollectorRefreshConfiguration.class,
-        LogCollectorFeignConfiguration.class})
+        LogCollectorFeignConfiguration.class,
+        LogCollectorRegisterConfiguration.class})
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
-public class LogCollectorAutoConfiguration implements InitializingBean {
+public class LogCollectorAutoConfiguration {
     private final LogCollectorProperties properties;
     private final ApplicationContext applicationContext;
-
-    @Override
-    public void afterPropertiesSet() {
-        Map<String, LogCollector> collectors = applicationContext.getBeansOfType(LogCollector.class);
-        collectors.values().forEach(x -> LogCollectors.register(x.type(), x));
-    }
 
     @JsonFilter("logCollectorFilter")
     static class DynamicFilter {
