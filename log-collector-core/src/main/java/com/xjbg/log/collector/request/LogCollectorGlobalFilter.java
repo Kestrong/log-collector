@@ -2,6 +2,7 @@ package com.xjbg.log.collector.request;
 
 import com.xjbg.log.collector.LogCollectors;
 import com.xjbg.log.collector.enums.LogState;
+import com.xjbg.log.collector.model.LogContext;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
 import com.xjbg.log.collector.utils.*;
@@ -79,6 +80,7 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
             return;
         }
         LogInfo.LogInfoBuilder builder = LogInfo.builder().requestTime(new Date());
+        LogContext.LogContextBuilder logContextBuilder = LogContext.builder();
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String requestIdName = properties.getFilter().getRequestIdHeadName();
@@ -101,6 +103,7 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     }
                     httpServletRequest.addHeader(requestIdName, header);
                 }
+                logContextBuilder.requestId(header);
                 if (!httpServletResponse.containsHeader(requestIdName)) {
                     httpServletResponse.addHeader(requestIdName, header);
                 }
@@ -124,10 +127,12 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                         httpServletResponse.addHeader(userIdHeadName, userId);
                     }
                     UserEnv.setUser(userId);
+                    logContextBuilder.userId(userId);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
+            LogContextHolder.setContext(logContextBuilder.build());
             stopWatch.stop();
             log.debug("log collector global filter cost microseconds: {}", stopWatch.getTime(TimeUnit.MICROSECONDS));
             //do log paths
@@ -148,6 +153,7 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
             MDC.remove(requestIdName);
             RequestIdHolder.remove();
             UserEnv.remove();
+            LogContextHolder.remove();
         }
     }
 

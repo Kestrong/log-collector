@@ -1,4 +1,4 @@
-package com.xjbg.log.collector.starter.filter;
+package com.xjbg.log.collector.spring.filter;
 
 import com.xjbg.log.collector.utils.ByteUtil;
 import org.springframework.core.io.buffer.DataBuffer;

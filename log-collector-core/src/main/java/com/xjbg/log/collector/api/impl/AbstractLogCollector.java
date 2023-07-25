@@ -9,8 +9,7 @@ import com.xjbg.log.collector.enums.RejectPolicy;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.transformer.DefaultLogTransformer;
 import com.xjbg.log.collector.transformer.LogTransformer;
-import com.xjbg.log.collector.utils.RequestIdHolder;
-import com.xjbg.log.collector.utils.UserEnv;
+import com.xjbg.log.collector.utils.LogContextHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +58,10 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
             logInfo.setLogId(UUID.randomUUID().toString());
         }
         if (StringUtils.isBlank(logInfo.getRequestId())) {
-            logInfo.setRequestId(RequestIdHolder.getRequestId());
+            logInfo.setRequestId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getRequestId())).orElse(null));
         }
         if (StringUtils.isBlank(logInfo.getUserId())) {
-            logInfo.setUserId(UserEnv.getUser());
+            logInfo.setUserId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getUserId())).orElse(null));
         }
         if (StringUtils.isBlank(logInfo.getApplication())) {
             logInfo.setApplication(LogCollectorConstant.APPLICATION);

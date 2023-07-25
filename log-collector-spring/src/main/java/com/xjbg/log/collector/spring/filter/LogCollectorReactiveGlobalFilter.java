@@ -1,36 +1,33 @@
-package com.xjbg.log.collector.starter.filter;
+package com.xjbg.log.collector.spring.filter;
 
 import com.xjbg.log.collector.LogCollectors;
 import com.xjbg.log.collector.enums.LogState;
+import com.xjbg.log.collector.model.LogContext;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
 import com.xjbg.log.collector.request.AbstractLogCollectorGlobalFilter;
+import com.xjbg.log.collector.spring.model.ReactiveRequestContext;
+import com.xjbg.log.collector.spring.utils.ReactiveLogHttpRequestUtil;
+import com.xjbg.log.collector.spring.utils.ReactiveRequestContextHolder;
 import com.xjbg.log.collector.utils.ExceptionUtil;
 import com.xjbg.log.collector.utils.JsonLogUtil;
-import com.xjbg.log.collector.utils.RequestIdHolder;
-import com.xjbg.log.collector.utils.UserEnv;
+import com.xjbg.log.collector.utils.ReactiveLogContextHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nonnull;
-import java.net.InetAddress;
-import java.net.URI;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ORIGINAL_REQUEST_URL_ATTR;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @author kesc
@@ -42,46 +39,11 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
         super(properties);
     }
 
-    private String getRequestIp(ServerHttpRequest request) {
-        try {
-            if (request == null) {
-                return null;
-            }
-            String ip = request.getHeaders().getFirst("X-Forwarded-For");
-            if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeaders().getFirst("Proxy-Client-IP");
-            }
-            if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeaders().getFirst("WL-Proxy-Client-IP");
-            }
-            if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
-                if (request.getRemoteAddress() != null) {
-                    ip = request.getRemoteAddress().getAddress().getHostAddress();
-                    if ("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
-                        try {
-                            InetAddress inet = InetAddress.getLocalHost();
-                            ip = inet.getHostAddress();
-                        } catch (Exception e) {
-                            //ignore
-                        }
-                    }
-                }
-            }
-            if (ip != null && ip.length() > 15) {
-                if (ip.indexOf(",") > 0) {
-                    ip = ip.substring(0, ip.indexOf(","));
-                }
-            }
-            return ip;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     @SuppressWarnings("unchecked")
     protected void doLogPaths(LogInfo.LogInfoBuilder builder, MutableServerHttpRequestDecorator request) {
         try {
-            boolean match = match(request.getPath().pathWithinApplication().value());
+            String requestURL = ReactiveLogHttpRequestUtil.getRequestURL(request);
+            boolean match = match(requestURL);
             if (!match) {
                 return;
             }
@@ -101,9 +63,10 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
             try {
                 LogCollectors.defaultCollector().logAsync(builder
                         .responseTime(new Date())
-                        .userAgent(request.getHeaders().getFirst("User-Agent"))
-                        .requestMethod(request.getMethodValue())
-                        .requestIp(getRequestIp(request))
+                        .requestUrl(requestURL)
+                        .userAgent(ReactiveLogHttpRequestUtil.getUserAgent(request))
+                        .requestMethod(ReactiveLogHttpRequestUtil.getRequestMethod(request))
+                        .requestIp(ReactiveLogHttpRequestUtil.getRequestIp(request))
                         .params(JsonLogUtil.toJson(payload)).build());
             } catch (Exception e) {
                 //ignore
@@ -114,12 +77,13 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
     }
 
     @Override
-    @Nonnull
-    public Mono<Void> filter(@Nonnull ServerWebExchange exchange, @Nonnull WebFilterChain chain) {
+    @NonNull
+    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         if (!properties.getFilter().isEnable()) {
             return chain.filter(exchange);
         }
         LogInfo.LogInfoBuilder builder = LogInfo.builder().requestTime(new Date());
+        LogContext.LogContextBuilder logContextBuilder = LogContext.builder();
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String requestIdName = properties.getFilter().getRequestIdHeadName();
@@ -139,6 +103,7 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
             if (!httpResponse.getHeaders().containsKey(requestIdName)) {
                 httpResponse.getHeaders().add(requestIdName, requestId);
             }
+            logContextBuilder.requestId(requestId);
             builder.requestId(requestId);
             //do userId
             String userTokenName = properties.getFilter().getUserTokenHeadName();
@@ -152,6 +117,7 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
                 if (!httpResponse.getHeaders().containsKey(userIdHeadName)) {
                     httpResponse.getHeaders().add(userIdHeadName, userId);
                 }
+                logContextBuilder.userId(userId);
                 builder.userId(userId);
             }
         } catch (Exception e) {
@@ -163,7 +129,7 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
         Predicate<String> canConsume = this::canConsume;
         MutableServerHttpRequestDecorator httpRequestDecorator = new MutableServerHttpRequestDecorator(httpRequest, canConsume);
         MutableServerHttpResponseDecorator httpResponseDecorator = new MutableServerHttpResponseDecorator(httpResponse, canConsume);
-        return chain.filter(exchange.mutate().request(httpRequestDecorator).response(httpResponseDecorator).build())
+        Mono<Void> mono = ReactiveLogContextHolder.setContext(chain.filter(exchange.mutate().request(httpRequestDecorator).response(httpResponseDecorator).build())
                 .doOnError(cx -> builder.state(LogState.FAIL.name()).response(ExceptionUtil.getTraceInfo(cx.getCause())))
                 .doOnSuccess(cx -> {
                     byte[] content = httpResponseDecorator.getContent();
@@ -179,18 +145,11 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
                 }).doFinally(x -> {
                     stopWatch.reset();
                     stopWatch.start();
-                    URI uri = exchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
-                    if (uri != null) {
-                        builder.requestUrl(uri.toString());
-                    } else {
-                        Set<URI> uris = exchange.getAttributeOrDefault(GATEWAY_ORIGINAL_REQUEST_URL_ATTR, Collections.emptySet());
-                        String originalUri = (uris.isEmpty()) ? "Unknown" : uris.iterator().next().toString();
-                        builder.requestUrl(originalUri);
-                    }
                     doLogPaths(builder, httpRequestDecorator);
                     stopWatch.stop();
                     log.debug("log path cost microseconds: {}", stopWatch.getTime(TimeUnit.MICROSECONDS));
-                });
+                }), logContextBuilder.build());
+        return ReactiveRequestContextHolder.setRequestContext(mono, ReactiveRequestContext.builder().request(httpRequestDecorator).response(httpResponseDecorator).build());
     }
 
     @Override

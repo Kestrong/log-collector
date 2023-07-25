@@ -1,4 +1,4 @@
-package com.xjbg.log.collector.starter.filter;
+package com.xjbg.log.collector.spring.filter;
 
 import com.xjbg.log.collector.utils.ByteUtil;
 import org.reactivestreams.Publisher;
@@ -10,7 +10,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -40,7 +39,7 @@ public class MutableServerHttpResponseDecorator extends ServerHttpResponseDecora
     @Override
     @NonNull
     @SuppressWarnings("unchecked")
-    public Mono<Void> writeWith(@Nonnull Publisher<? extends DataBuffer> body) {
+    public Mono<Void> writeWith(@NonNull Publisher<? extends DataBuffer> body) {
         if (!canConsume()) {
             return super.writeWith(body);
         }

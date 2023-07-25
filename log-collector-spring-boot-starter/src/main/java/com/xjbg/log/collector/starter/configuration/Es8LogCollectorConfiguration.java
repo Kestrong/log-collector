@@ -33,8 +33,8 @@ public class Es8LogCollectorConfiguration extends LogCollectorRestClientBuilderC
     @Bean(name = "esLogCollector", initMethod = "start", destroyMethod = "stop")
     @ConditionalOnExpression(value = "${" + LogCollectorProperties.PREFIX + ".es.enable:false}&&'${" + LogCollectorProperties.PREFIX + ".es.version:7}'.equals('8')")
     @ConditionalOnMissingBean(name = "esLogCollector")
-    public Es8LogCollector esLogCollector() throws ReflectiveOperationException {
-        Es8LogCollector esLogCollector = new Es8LogCollector(logCollectorElasticsearchClient());
+    public Es8LogCollector esLogCollector(ElasticsearchClient logCollectorElasticsearchClient) throws ReflectiveOperationException {
+        Es8LogCollector esLogCollector = new Es8LogCollector(logCollectorElasticsearchClient);
         LogCollectorProperties.EsLogCollectorCustomProperties propertiesEs = properties.getEs();
         logCollectorAutoConfiguration.setCustomProperties(esLogCollector, propertiesEs);
         if (StringUtils.hasText(propertiesEs.getIndex())) {
@@ -48,7 +48,7 @@ public class Es8LogCollectorConfiguration extends LogCollectorRestClientBuilderC
 
     @Bean(name = "logCollectorElasticsearchClient")
     @ConditionalOnExpression(value = "${" + LogCollectorProperties.PREFIX + ".es.enable:false}&&'${" + LogCollectorProperties.PREFIX + ".es.version:7}'.equals('8')")
-    @ConditionalOnMissingBean(name = "logCollectorElasticsearchClient")
+    @ConditionalOnMissingBean(value = ElasticsearchClient.class)
     public ElasticsearchClient logCollectorElasticsearchClient() {
         ObjectMapper objectMapper = JsonLogUtil.createObjectMapper();
         logCollectorAutoConfiguration.configure(objectMapper, properties.getEs().getJson());

@@ -9,4 +9,5 @@ dependencies {
     compileOnly 'org.springframework:spring-web'
     compileOnly 'org.springframework:spring-context'
     compileOnly 'org.apache.httpcomponents:httpclient'
+    compileOnly 'org.springframework:spring-webflux'
 }

@@ -20,7 +20,7 @@ import com.xjbg.log.collector.spring.utils.LogCollectorCleaner;
 import com.xjbg.log.collector.spring.utils.LogHttpUtil;
 import com.xjbg.log.collector.starter.configuration.*;
 import com.xjbg.log.collector.starter.filter.LogCollectorGatewayGlobalFilter;
-import com.xjbg.log.collector.starter.filter.LogCollectorReactiveGlobalFilter;
+import com.xjbg.log.collector.spring.filter.LogCollectorReactiveGlobalFilter;
 import com.xjbg.log.collector.token.IHttpTokenCreator;
 import com.xjbg.log.collector.transformer.LogTransformer;
 import com.xjbg.log.collector.utils.JsonLogUtil;
@@ -162,8 +162,8 @@ public class LogCollectorAutoConfiguration implements InitializingBean {
 
     }
 
-    @ConditionalOnClass(value = {WebFilter.class})
     @ConditionalOnMissingClass(value = "org.springframework.cloud.gateway.filter.GlobalFilter")
+    @ConditionalOnClass(value = {WebFilter.class})
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
     @Configuration
     public class LogCollectorReactiveGlobalFilterConfiguration {
@@ -206,11 +206,11 @@ public class LogCollectorAutoConfiguration implements InitializingBean {
         if (StringUtils.hasText(customProperties.getFallbackCollector())) {
             abstractLogCollector.setFallbackCollector(customProperties.getFallbackCollector());
         }
-        if (customProperties.getBatchSize() != null && customProperties.getBatchSize() > 0) {
-            abstractLogCollector.setBatchSize(customProperties.getBatchSize());
-        }
         if (customProperties.getPoolSize() != null && customProperties.getPoolSize() > 0) {
             abstractLogCollector.setPoolSize(Math.max(customProperties.getPoolSize(), Runtime.getRuntime().availableProcessors()));
+        }
+        if (customProperties.getBatchSize() != null && customProperties.getBatchSize() > 0) {
+            abstractLogCollector.setBatchSize(customProperties.getBatchSize());
         }
         if (customProperties.getRejectPolicy() != null) {
             abstractLogCollector.setRejectPolicy(customProperties.getRejectPolicy());
@@ -298,20 +298,21 @@ public class LogCollectorAutoConfiguration implements InitializingBean {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true")
-    @ConditionalOnMissingBean(value = NoopLogCollector.class)
+    @ConditionalOnMissingBean(name = "noopLogCollector")
     public NoopLogCollector noopLogCollector() {
         return new NoopLogCollector();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true")
-    @ConditionalOnMissingBean(value = CommonLogCollector.class)
+    @ConditionalOnMissingBean(name = "commonLogCollector")
     public CommonLogCollector commonLogCollector() {
         return new CommonLogCollector();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @ConditionalOnMissingBean(value = DataBaseLogCollector.class)
+    @ConditionalOnMissingBean(name = "dataBaseLogCollector")
+    @ConditionalOnBean(value = DataSource.class)
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".database.enable", havingValue = "true")
     public DataBaseLogCollector dataBaseLogCollector(DataSource logCollectorDataSource) throws
             ReflectiveOperationException {
@@ -330,11 +331,18 @@ public class LogCollectorAutoConfiguration implements InitializingBean {
     @ConditionalOnClass(value = {HttpClient.class})
     public class HttpLogCollectorConfiguration {
 
-        @Bean(initMethod = "start", destroyMethod = "stop")
-        @ConditionalOnMissingBean(value = HttpLogCollector.class)
+        @Bean(name = "logCollectorHttpClient")
+        @ConditionalOnMissingBean(value = HttpClient.class)
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".http.enable", havingValue = "true")
-        public HttpLogCollector httpLogCollector() throws ReflectiveOperationException {
-            HttpLogCollector httpLogCollector = new HttpLogCollector(properties.getHttp().getUrl(), LogHttpUtil.createHttpClient(properties.getHttp().getConnection()));
+        public HttpClient logCollectorHttpClient() {
+            return LogHttpUtil.createHttpClient(properties.getHttp().getConnection());
+        }
+
+        @Bean(name = "httpLogCollector", initMethod = "start", destroyMethod = "stop")
+        @ConditionalOnMissingBean(name = "httpLogCollector")
+        @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".http.enable", havingValue = "true")
+        public HttpLogCollector httpLogCollector(HttpClient logCollectorHttpClient) throws ReflectiveOperationException {
+            HttpLogCollector httpLogCollector = new HttpLogCollector(properties.getHttp().getUrl(), logCollectorHttpClient);
             setCustomProperties(httpLogCollector, properties.getHttp());
             ObjectMapper objectMapper = JsonLogUtil.createObjectMapper();
             configure(objectMapper, properties.getHttp().getJson());

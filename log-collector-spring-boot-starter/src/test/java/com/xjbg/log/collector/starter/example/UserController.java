@@ -6,16 +6,16 @@ import com.xjbg.log.collector.starter.example.feign.UserFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * @author kesc
  * @since 2023-04-14 15:46
  */
-@RestController
-@RequestMapping(value = "/user")
 public class UserController {
 
     @Autowired
@@ -53,6 +53,11 @@ public class UserController {
     public void file(HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
         response.getOutputStream().write("<html>1234</html>".getBytes());
+    }
+
+    @GetMapping("/hello")
+    public Mono<String> hello() {
+        return userService.hello(new ArrayList<>(), Mono.just("Hello World!"));
     }
 
 }
