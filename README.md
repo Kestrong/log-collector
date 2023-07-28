@@ -228,14 +228,13 @@ log:
 
 #### 可选
 
-  * org.apache.httpcomponents:httpclient:4.5.12
-  * org.elasticsearch:elasticsearch:\[7.5.1-8.5.1]
-  * org.elasticsearch.client:elasticsearch-rest-client:8.5.1  
-  * co.elastic.clients:elasticsearch-java:8.5.1
-  * org.elasticsearch.client:elasticsearch-rest-high-level-client:7.5.1
-  * io.github.openfeign:feign-httpclient:10.10.1
-  * com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.1.4.RELEASE
-  * com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2.1.4.RELEASE
-  * org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR9
-  * org.springframework.boot:spring-boot-dependencies:2.3.2.RELEASE
-  * org.springframework:spring-framework-bom:5.2.23.RELEASE
+* org.apache.httpcomponents:httpclient:4.5.12
+* org.elasticsearch:elasticsearch:\[7.5.1-8.5.1]
+* org.elasticsearch.client:elasticsearch-rest-client:8.5.1
+* co.elastic.clients:elasticsearch-java:8.5.1
+* org.elasticsearch.client:elasticsearch-rest-high-level-client:7.5.1
+* io.github.openfeign:feign-httpclient:11.10
+* com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.2.2.RELEASE
+* com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2.2.2.RELEASE
+* org.springframework.cloud:spring-cloud-dependencies:2021.0.7
+* org.springframework.boot:spring-boot-dependencies:2.7.12
