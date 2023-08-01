@@ -114,9 +114,6 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
             String userId = userIdRetriever != null ? userIdRetriever.getUserId(token) : null;
             if (StringUtils.isNotBlank(userId)) {
                 httpRequest = httpRequest.mutate().header(userIdHeadName, userId).build();
-                if (!httpResponse.getHeaders().containsKey(userIdHeadName)) {
-                    httpResponse.getHeaders().add(userIdHeadName, userId);
-                }
                 logContextBuilder.userId(userId);
                 builder.userId(userId);
             }

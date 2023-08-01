@@ -123,9 +123,6 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                 if (StringUtils.isNotBlank(userId)) {
                     String userIdHeadName = properties.getFilter().getUserIdHeadName();
                     httpServletRequest.addHeader(userIdHeadName, userId);
-                    if (!httpServletResponse.containsHeader(userIdHeadName)) {
-                        httpServletResponse.addHeader(userIdHeadName, userId);
-                    }
                     UserEnv.setUser(userId);
                     logContextBuilder.userId(userId);
                 }

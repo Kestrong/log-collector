@@ -146,9 +146,6 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
             if (StringUtils.isNotBlank(userId)) {
                 String userIdHeadName = properties.getFilter().getUserIdHeadName();
                 httpRequest = httpRequest.mutate().header(userIdHeadName, userId).build();
-                if (!httpResponse.getHeaders().containsKey(userIdHeadName)) {
-                    httpResponse.getHeaders().add(userIdHeadName, userId);
-                }
                 builder.userId(userId);
             }
         } catch (Exception e) {
