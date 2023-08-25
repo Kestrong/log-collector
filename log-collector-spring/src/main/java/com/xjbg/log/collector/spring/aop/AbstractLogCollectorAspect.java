@@ -174,7 +174,7 @@ public abstract class AbstractLogCollectorAspect implements MethodInterceptor {
         Object response = null;
         boolean fail = false;
         Map<String, Object> logRequest = new HashMap<>();
-        LogInfo.LogInfoBuilder logInfoBuilder = LogInfo.builder().responseTime(new Date());
+        LogInfo.LogInfoBuilder logInfoBuilder = LogInfo.builder().requestTime(new Date());
         try {
             prepareLogRequest(logRequest, invocation.getMethod().getParameters(), invocation.getArguments());
             logInfoBuilder.handleMethod(invocation.getThis() == null ? invocation.getMethod().getDeclaringClass().getName() : invocation.getThis().getClass().getName() + "#" + invocation.getMethod().getName())
