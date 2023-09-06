@@ -3,6 +3,7 @@ package com.xjbg.log.collector.api.impl;
 import com.xjbg.log.collector.enums.CollectorType;
 import com.xjbg.log.collector.enums.LogState;
 import com.xjbg.log.collector.model.LogInfo;
+import com.xjbg.log.collector.transformer.DefaultLogTransformer;
 
 import java.util.List;
 
@@ -11,6 +12,11 @@ import java.util.List;
  * @since 2023-03-30 12:13
  */
 public class CommonLogCollector extends NoopLogCollector {
+
+    @Override
+    protected void init() {
+        super.setLogTransformer(new DefaultLogTransformer<>());
+    }
 
     @Override
     public String type() {

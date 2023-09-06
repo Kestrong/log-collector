@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogCollector<T> {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     private String fallbackCollector;
+    private String nextCollector;
     private Channel<T> channel;
     private LogTransformer<T, R> logTransformer;
     private RejectPolicy rejectPolicy = RejectPolicy.NOOP;
@@ -80,6 +81,10 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
             log.warn("log occur error, the reason maybe: {}", e.getMessage());
             logAsyncFallback(logInfo);
             return false;
+        } finally {
+            if (getNextCollector() != null) {
+                getNextCollector().log(logInfo);
+            }
         }
     }
 
@@ -102,6 +107,10 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
             log.warn("log batch occur error, the reason maybe: {}", e.getMessage());
             logInfos.forEach(this::logAsyncFallback);
             return false;
+        } finally {
+            if (getNextCollector() != null) {
+                getNextCollector().logBatch(logInfos);
+            }
         }
     }
 
@@ -296,6 +305,17 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
     @Override
     public void setFallbackCollector(String fallbackCollector) {
         this.fallbackCollector = fallbackCollector;
+    }
+
+    public LogCollector getNextCollector() {
+        if (StringUtils.isBlank(nextCollector)) {
+            return null;
+        }
+        return LogCollectors.getCollector(nextCollector);
+    }
+
+    public void setNextCollector(String nextCollector) {
+        this.nextCollector = nextCollector;
     }
 
     public int getPoolSize() {
