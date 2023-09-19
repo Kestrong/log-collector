@@ -40,6 +40,7 @@ public class LogCollectorProperties {
      */
     private int maxHistory = 30;
     private LogCollectorFilterProperties filter = new LogCollectorFilterProperties();
+    private LogCollectorCustomProperties common = new LogCollectorCustomProperties();
     private DataBaseLogCollectorCustomProperties database = new DataBaseLogCollectorCustomProperties();
     private HttpLogCollectorCustomProperties http = new HttpLogCollectorCustomProperties();
     private EsLogCollectorCustomProperties es = new EsLogCollectorCustomProperties();
@@ -50,6 +51,7 @@ public class LogCollectorProperties {
     public static class LogCollectorFilterProperties {
         private boolean enable = true;
         private int order = 0;
+        private String tenantHeaderName = LogCollectorConstant.TENANT_HEADER_NAME;
         private String requestIdHeadName = LogCollectorConstant.REQUEST_ID_HEADER;
         private String userIdHeadName = LogCollectorConstant.USER_ID_HEADER;
         private String userTokenHeadName = LogCollectorConstant.AUTHORIZATION;

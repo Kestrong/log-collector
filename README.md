@@ -143,6 +143,9 @@ log:
       consume-media-type: #过滤器如果配置记录日志 此配置用于判断content-type符合才记录request和response的body 
         - application/json
     pointcut: execution(public * com.xjbg.log.collector.starter.example.*.*(..)) #统一拦截的切面 默认空不生效
+    common:
+      enable: true #是否启用 默认false
+      #省略共同属性
     database:
       #共同属性
       enable: true #是否启用 默认false

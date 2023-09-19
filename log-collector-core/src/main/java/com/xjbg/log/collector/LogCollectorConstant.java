@@ -9,4 +9,6 @@ public class LogCollectorConstant {
     public static final String AUTHORIZATION = "Authorization";
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
     public static final String USER_ID_HEADER = "X-User-Id";
+    public static final String TENANT_HEADER_NAME = "X-Tenant-Id";
+    public static final String BUSINESS_NO = "businessNo";
 }

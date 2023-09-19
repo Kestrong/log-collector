@@ -126,6 +126,8 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     UserEnv.setUser(userId);
                     logContextBuilder.userId(userId);
                 }
+                //do tenant
+                logContextBuilder.tenantId(httpServletRequest.getHeader(properties.getFilter().getTenantHeaderName()));
             } catch (Exception e) {
                 log.error(e.getMessage());
             }

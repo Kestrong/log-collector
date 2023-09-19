@@ -2,6 +2,7 @@ CREATE TABLE `log_info`
 (
     `log_id`         varchar(36) NOT NULL,
     `user_id`        varchar(36)  DEFAULT NULL,
+    `tenant_id`     varchar(36)  DEFAULT NULL,
     `business_no`    varchar(64)  DEFAULT NULL,
     `application`    varchar(64)  DEFAULT NULL,
     `module`         varchar(16)  DEFAULT NULL,

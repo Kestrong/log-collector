@@ -25,8 +25,10 @@ import com.xjbg.log.collector.transformer.LogTransformer;
 import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -56,6 +58,7 @@ import java.util.Set;
         LogCollectorFeignConfiguration.class,
         LogCollectorRegisterConfiguration.class})
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
+@AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
 public class LogCollectorAutoConfiguration {
@@ -296,15 +299,16 @@ public class LogCollectorAutoConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true")
+    @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".common.enable", havingValue = "true")
     @ConditionalOnMissingBean(name = "commonLogCollector")
-    public CommonLogCollector commonLogCollector() {
-        return new CommonLogCollector();
+    public CommonLogCollector commonLogCollector() throws ReflectiveOperationException {
+        CommonLogCollector commonLogCollector = new CommonLogCollector();
+        setCustomProperties(commonLogCollector, properties.getCommon());
+        return commonLogCollector;
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnMissingBean(name = "dataBaseLogCollector")
-    @ConditionalOnBean(value = DataSource.class)
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".database.enable", havingValue = "true")
     public DataBaseLogCollector dataBaseLogCollector(DataSource logCollectorDataSource) throws
             ReflectiveOperationException {

@@ -21,6 +21,7 @@ import java.util.StringJoiner;
 public class LogInfo implements Serializable {
     private String logId;
     private String userId;
+    private String tenantId;
     private String application;
     private String businessNo;
     private String module;

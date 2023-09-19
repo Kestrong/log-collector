@@ -87,8 +87,8 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
         if (sqlTemplate == null) {
             synchronized (this) {
                 if (sqlTemplate == null) {
-                    List<String> fields = Arrays.asList("log_id", "user_id", "business_no", "application", "module", "action", "state", "type", "handle_method", "user_agent", "request_id", "request_ip", "request_url", "request_method", "request_time", "create_time", "response_time", "params", "response");
-                    sqlTemplate = String.format("INSERT INTO %s(%s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", wrap(getTableName()), fields.stream().map(this::wrap).collect(Collectors.joining(",")));
+                    List<String> fields = Arrays.asList("log_id", "user_id", "tenant_id", "business_no", "application", "module", "action", "state", "type", "handle_method", "user_agent", "request_id", "request_ip", "request_url", "request_method", "request_time", "create_time", "response_time", "params", "response");
+                    sqlTemplate = String.format("INSERT INTO %s(%s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", wrap(getTableName()), fields.stream().map(this::wrap).collect(Collectors.joining(",")));
                 }
             }
         }
@@ -109,6 +109,7 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
                 int index = 1;
                 preparedStatement.setString(index++, logInfo.getLogId());
                 preparedStatement.setString(index++, logInfo.getUserId());
+                preparedStatement.setString(index++, logInfo.getTenantId());
                 preparedStatement.setString(index++, logInfo.getBusinessNo());
                 preparedStatement.setString(index++, logInfo.getApplication());
                 preparedStatement.setString(index++, logInfo.getModule());

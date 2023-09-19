@@ -1,7 +1,6 @@
 package com.xjbg.log.collector;
 
 import com.xjbg.log.collector.api.LogCollector;
-import com.xjbg.log.collector.api.impl.CommonLogCollector;
 import com.xjbg.log.collector.api.impl.NoopLogCollector;
 import com.xjbg.log.collector.enums.CollectorType;
 
@@ -18,7 +17,6 @@ public class LogCollectors {
 
     static {
         register(CollectorType.NOOP.getType(), new NoopLogCollector());
-        register(CollectorType.COMMON.getType(), new CommonLogCollector());
     }
 
     public static void setDefaultCollectorType(String type) {

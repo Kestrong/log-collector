@@ -16,4 +16,5 @@ import lombok.NoArgsConstructor;
 public class LogContext {
     private String requestId;
     private String userId;
+    private String tenantId;
 }

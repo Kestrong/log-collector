@@ -117,6 +117,7 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
                 logContextBuilder.userId(userId);
                 builder.userId(userId);
             }
+            logContextBuilder.tenantId(httpRequest.getHeaders().getFirst(properties.getFilter().getTenantHeaderName()));
         } catch (Exception e) {
             log.error(e.getMessage());
         }

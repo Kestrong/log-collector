@@ -63,6 +63,9 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
         if (StringUtils.isBlank(logInfo.getUserId())) {
             logInfo.setUserId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getUserId())).orElse(null));
         }
+        if (StringUtils.isBlank(logInfo.getTenantId())) {
+            logInfo.setTenantId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getTenantId())).orElse(null));
+        }
         if (StringUtils.isBlank(logInfo.getApplication())) {
             logInfo.setApplication(LogCollectorConstant.APPLICATION);
         }
