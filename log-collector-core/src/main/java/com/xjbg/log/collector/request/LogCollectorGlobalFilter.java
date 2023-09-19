@@ -5,7 +5,10 @@ import com.xjbg.log.collector.enums.LogState;
 import com.xjbg.log.collector.model.LogContext;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.properties.LogCollectorProperties;
-import com.xjbg.log.collector.utils.*;
+import com.xjbg.log.collector.utils.ExceptionUtil;
+import com.xjbg.log.collector.utils.JsonLogUtil;
+import com.xjbg.log.collector.utils.LogContextHolder;
+import com.xjbg.log.collector.utils.LogHttpRequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.MDC;
@@ -108,7 +111,6 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     httpServletResponse.addHeader(requestIdName, header);
                 }
                 MDC.put(requestIdName, header);
-                RequestIdHolder.setRequestId(header);
                 //do userId
                 String userTokenName = properties.getFilter().getUserTokenHeadName();
                 String token = httpServletRequest.getHeader(userTokenName);
@@ -123,7 +125,6 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                 if (StringUtils.isNotBlank(userId)) {
                     String userIdHeadName = properties.getFilter().getUserIdHeadName();
                     httpServletRequest.addHeader(userIdHeadName, userId);
-                    UserEnv.setUser(userId);
                     logContextBuilder.userId(userId);
                 }
                 //do tenant
@@ -150,8 +151,6 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
             }
         } finally {
             MDC.remove(requestIdName);
-            RequestIdHolder.remove();
-            UserEnv.remove();
             LogContextHolder.remove();
         }
     }

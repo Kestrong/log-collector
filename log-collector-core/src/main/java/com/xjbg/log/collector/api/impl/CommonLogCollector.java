@@ -4,7 +4,6 @@ import com.xjbg.log.collector.LogCollectorConstant;
 import com.xjbg.log.collector.enums.CollectorType;
 import com.xjbg.log.collector.enums.LogState;
 import com.xjbg.log.collector.model.LogInfo;
-import com.xjbg.log.collector.transformer.DefaultLogTransformer;
 import org.slf4j.MDC;
 
 import java.util.List;
