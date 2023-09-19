@@ -158,6 +158,7 @@ log:
         flowControlInterval: 1000 #间隔多久检查一次流量 默认3000 单位：毫秒
         threshold: 0.8 # 队列容量的记录大小阈值 到达阈值时将触发拒绝策略 默认0.8
       fallbackCollector: #当收集器发送错误时降级处理的处理器类型
+      nextCollector: #传输到下一个收集器
       poolSize: 10 #开启线程池 默认0不开启
       batchSize: 10 #异步写入时的批次大小 大于0时生效 默认1
       rejectPolicy: discard_oldest #队列拒绝策略 默认noop不丢失阻塞等待 可选[noop|fallback|caller_runs|discard|discard_oldest]

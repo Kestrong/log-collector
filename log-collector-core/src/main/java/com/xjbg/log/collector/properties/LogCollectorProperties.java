@@ -129,6 +129,7 @@ public class LogCollectorProperties {
     public static class LogCollectorCustomProperties {
         private boolean enable = false;
         private String fallbackCollector;
+        private String nextCollector;
         private Integer poolSize;
         private Integer batchSize;
         private RejectPolicy rejectPolicy;

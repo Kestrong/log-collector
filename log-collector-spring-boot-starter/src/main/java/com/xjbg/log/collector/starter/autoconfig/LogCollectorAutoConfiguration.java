@@ -201,6 +201,9 @@ public class LogCollectorAutoConfiguration {
         if (StringUtils.hasText(customProperties.getFallbackCollector())) {
             abstractLogCollector.setFallbackCollector(customProperties.getFallbackCollector());
         }
+        if (StringUtils.hasText(customProperties.getNextCollector())) {
+            abstractLogCollector.setNextCollector(customProperties.getNextCollector());
+        }
         if (customProperties.getPoolSize() != null && customProperties.getPoolSize() > 0) {
             abstractLogCollector.setPoolSize(Math.max(customProperties.getPoolSize(), Runtime.getRuntime().availableProcessors()));
         }
