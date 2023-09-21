@@ -306,6 +306,7 @@ public class LogCollectorAutoConfiguration {
     @ConditionalOnMissingBean(name = "commonLogCollector")
     public CommonLogCollector commonLogCollector() throws ReflectiveOperationException {
         CommonLogCollector commonLogCollector = new CommonLogCollector();
+        properties.getCommon().setEnable(true);
         setCustomProperties(commonLogCollector, properties.getCommon());
         return commonLogCollector;
     }
