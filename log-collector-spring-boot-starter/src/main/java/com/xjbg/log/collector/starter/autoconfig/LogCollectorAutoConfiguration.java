@@ -295,14 +295,14 @@ public class LogCollectorAutoConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true")
+    @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean(name = "noopLogCollector")
     public NoopLogCollector noopLogCollector() {
         return new NoopLogCollector();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".common.enable", havingValue = "true")
+    @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".common.enable", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean(name = "commonLogCollector")
     public CommonLogCollector commonLogCollector() throws ReflectiveOperationException {
         CommonLogCollector commonLogCollector = new CommonLogCollector();
