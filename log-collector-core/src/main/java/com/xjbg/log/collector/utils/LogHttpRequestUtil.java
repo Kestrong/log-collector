@@ -16,10 +16,7 @@ public class LogHttpRequestUtil {
             if (request == null) {
                 return null;
             }
-            String ip = request.getHeader("X-Real-IP");
-            if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("X-Forwarded-For");
-            }
+            String ip = request.getHeader("X-Forwarded-For");
             if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
                 ip = request.getHeader("Proxy-Client-IP");
             }
