@@ -10,7 +10,7 @@ public interface IHttpTokenCreator {
 
     Map<String, String> tokenHeader();
 
-    String authUrl(String url);
+    String parseUrl(String url, Object param);
 
     void afterProperties(Map<String, String> properties);
 }

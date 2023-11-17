@@ -47,9 +47,9 @@ public class HttpLogCollector extends AbstractJsonLogCollector<LogInfo, Object> 
         return CollectorType.HTTP.getType();
     }
 
-    protected String getUrl() {
+    protected String parseUrl(Object param) {
         IHttpTokenCreator httpTokenCreator = getTokenCreator();
-        return httpTokenCreator != null ? httpTokenCreator.authUrl(url) : url;
+        return httpTokenCreator != null ? httpTokenCreator.parseUrl(url, param) : url;
     }
 
     protected Map<String, String> tokenHeaders() {
@@ -87,10 +87,10 @@ public class HttpLogCollector extends AbstractJsonLogCollector<LogInfo, Object> 
     @Override
     protected void doLog(List<Object> logInfos) throws Exception {
         if (getBatchSize() > 1) {
-            execute(getUrl(), logInfos);
+            execute(parseUrl(logInfos.get(0)), logInfos);
         } else {
             for (Object logInfo : logInfos) {
-                execute(getUrl(), logInfo);
+                execute(parseUrl(logInfo), logInfo);
             }
         }
     }

@@ -72,14 +72,14 @@ public class JsonLogUtil {
                 try {
                     translateName = PropertyNamingStrategies.UpperCamelCaseStrategy.INSTANCE.translate(name);
                 } catch (Error e) {
-                    translateName = new PropertyNamingStrategy.UpperCamelCaseStrategy().translate(name);
+                    translateName = ((PropertyNamingStrategy.UpperCamelCaseStrategy) PropertyNamingStrategy.UPPER_CAMEL_CASE).translate(name);
                 }
                 break;
             case UPPER_SNAKE_CASE:
                 try {
                     translateName = PropertyNamingStrategies.UpperSnakeCaseStrategy.INSTANCE.translate(name);
                 } catch (Error e) {
-                    translateName = new PropertyNamingStrategy.SnakeCaseStrategy().translate(name);
+                    translateName = ((PropertyNamingStrategy.SnakeCaseStrategy) PropertyNamingStrategy.SNAKE_CASE).translate(name);
                     if (translateName != null) {
                         translateName = translateName.toUpperCase();
                     }
@@ -89,21 +89,35 @@ public class JsonLogUtil {
                 try {
                     translateName = PropertyNamingStrategies.SnakeCaseStrategy.INSTANCE.translate(name);
                 } catch (Error e) {
-                    translateName = new PropertyNamingStrategy.SnakeCaseStrategy().translate(name);
+                    translateName = ((PropertyNamingStrategy.SnakeCaseStrategy) PropertyNamingStrategy.SNAKE_CASE).translate(name);
                 }
                 break;
             case KEBAB_CASE:
                 try {
                     translateName = PropertyNamingStrategies.KebabCaseStrategy.INSTANCE.translate(name);
                 } catch (Error e) {
-                    translateName = new PropertyNamingStrategy.KebabCaseStrategy().translate(name);
+                    translateName = ((PropertyNamingStrategy.KebabCaseStrategy) PropertyNamingStrategy.KEBAB_CASE).translate(name);
+                }
+                break;
+            case LOWER_CASE:
+                try {
+                    translateName = PropertyNamingStrategies.LowerCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = ((PropertyNamingStrategy.LowerCaseStrategy) PropertyNamingStrategy.LOWER_CASE).translate(name);
+                }
+                break;
+            case LOWER_DOT_CASE:
+                try {
+                    translateName = PropertyNamingStrategies.LowerDotCaseStrategy.INSTANCE.translate(name);
+                } catch (Error e) {
+                    translateName = ((PropertyNamingStrategy.LowerDotCaseStrategy) PropertyNamingStrategy.LOWER_DOT_CASE).translate(name);
                 }
                 break;
             default:
                 try {
                     translateName = PropertyNamingStrategies.LowerCamelCaseStrategy.INSTANCE.translate(name);
                 } catch (Error e) {
-                    translateName = new PropertyNamingStrategy.LowerCaseStrategy().translate(name);
+                    translateName = PropertyNamingStrategy.LOWER_CAMEL_CASE.nameForField(null, null, name);
                 }
                 break;
         }

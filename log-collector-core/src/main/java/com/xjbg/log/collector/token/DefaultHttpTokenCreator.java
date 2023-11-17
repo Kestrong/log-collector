@@ -15,7 +15,7 @@ public class DefaultHttpTokenCreator implements IHttpTokenCreator {
     }
 
     @Override
-    public String authUrl(String url) {
+    public String parseUrl(String url, Object param) {
         return url;
     }
 

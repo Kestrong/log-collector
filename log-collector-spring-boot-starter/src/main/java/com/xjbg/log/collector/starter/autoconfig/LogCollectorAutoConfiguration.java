@@ -273,7 +273,16 @@ public class LogCollectorAutoConfiguration {
                         try {
                             objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_SNAKE_CASE);
                         } catch (Error e) {
-                            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+                            objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategy.SnakeCaseStrategy() {
+                                @Override
+                                public String translate(String input) {
+                                    String translate = super.translate(input);
+                                    if (translate != null) {
+                                        return translate.toUpperCase();
+                                    }
+                                    return null;
+                                }
+                            });
                         }
                         break;
                     case KEBAB_CASE:
@@ -281,6 +290,20 @@ public class LogCollectorAutoConfiguration {
                             objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
                         } catch (Error e) {
                             objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
+                        }
+                        break;
+                    case LOWER_CASE:
+                        try {
+                            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CASE);
+                        } catch (Error e) {
+                            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CASE);
+                        }
+                        break;
+                    case LOWER_DOT_CASE:
+                        try {
+                            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_DOT_CASE);
+                        } catch (Error e) {
+                            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_DOT_CASE);
                         }
                         break;
                     default:

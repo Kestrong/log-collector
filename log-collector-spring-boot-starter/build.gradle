@@ -2,7 +2,7 @@ jar.enabled = true
 bootJar.enabled = false
 
 dependencies {
-    compile project(':log-collector-spring')
+    api project(':log-collector-spring')
 
     compileOnly 'org.springframework.boot:spring-boot-starter-aop'
     compileOnly 'org.springframework.boot:spring-boot-autoconfigure-processor'
@@ -19,24 +19,24 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    testCompile group: 'junit', name: 'junit'
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
-    testCompile 'org.springframework.boot:spring-boot-starter-jetty'
-    testCompile 'org.springframework.boot:spring-boot-starter'
-    testCompile('org.springframework.boot:spring-boot-starter-web') {
+    testImplementation group: 'junit', name: 'junit'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-jetty'
+    testImplementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation('org.springframework.boot:spring-boot-starter-web') {
         exclude module: 'spring-boot-starter-tomcat'
     }
-    testCompile 'org.springframework.boot:spring-boot-starter-aop'
-    testCompile 'org.springframework.boot:spring-boot-autoconfigure-processor'
-    testCompile 'org.springframework.boot:spring-boot-starter-jdbc'
-    testCompile 'mysql:mysql-connector-java'
-    testCompile 'co.elastic.clients:elasticsearch-java'
-    testCompile 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
-    testCompile 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    testCompile 'io.github.openfeign:feign-httpclient'
-    testCompile 'org.springframework.cloud:spring-cloud-starter-bootstrap'
-    testCompile 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
-    testCompile 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
-    testCompile 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
-    testCompile 'org.springframework.cloud:spring-cloud-loadbalancer'
+    testImplementation 'org.springframework.boot:spring-boot-starter-aop'
+    testImplementation 'org.springframework.boot:spring-boot-autoconfigure-processor'
+    testImplementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    testImplementation 'mysql:mysql-connector-java'
+    testImplementation 'co.elastic.clients:elasticsearch-java'
+    testImplementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    testImplementation 'io.github.openfeign:feign-httpclient'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
+    testImplementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
+    testImplementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
+    testImplementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
+    testImplementation 'org.springframework.cloud:spring-cloud-loadbalancer'
 }

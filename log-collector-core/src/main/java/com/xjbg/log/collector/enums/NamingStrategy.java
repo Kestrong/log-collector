@@ -9,5 +9,7 @@ public enum NamingStrategy {
     UPPER_SNAKE_CASE,
     CAMEL_CASE,
     UPPER_CAMEL_CASE,
-    KEBAB_CASE
+    KEBAB_CASE,
+    LOWER_CASE,
+    LOWER_DOT_CASE
 }

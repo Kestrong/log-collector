@@ -2,8 +2,8 @@ jar.enabled = true
 bootJar.enabled = false
 
 dependencies {
-    compile project(':log-collector-core')
-    compile 'org.aspectj:aspectjweaver'
+    api project(':log-collector-core')
+    implementation 'org.aspectj:aspectjweaver'
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
     compileOnly 'org.springframework:spring-aop'
     compileOnly 'org.springframework:spring-web'
