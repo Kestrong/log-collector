@@ -39,4 +39,5 @@ dependencies {
     testImplementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery'
     testImplementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
     testImplementation 'org.springframework.cloud:spring-cloud-loadbalancer'
+    testImplementation 'org.openjdk.jol:jol-core'
 }
