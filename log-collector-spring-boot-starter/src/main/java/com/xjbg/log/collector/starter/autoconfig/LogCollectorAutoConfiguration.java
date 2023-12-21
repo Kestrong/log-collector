@@ -26,8 +26,10 @@ import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cglib.beans.BeanMap;
@@ -59,6 +61,7 @@ import java.util.Set;
         LogCollectorRegisterConfiguration.class})
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
+@AutoConfigureBefore(value = ElasticsearchRestClientAutoConfiguration.class)
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
 public class LogCollectorAutoConfiguration {
@@ -354,18 +357,11 @@ public class LogCollectorAutoConfiguration {
     @ConditionalOnClass(value = {HttpClient.class})
     public class HttpLogCollectorConfiguration {
 
-        @Bean(name = "logCollectorHttpClient")
-        @ConditionalOnMissingBean(value = HttpClient.class)
-        @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".http.enable", havingValue = "true")
-        public HttpClient logCollectorHttpClient() {
-            return LogHttpUtil.createHttpClient(properties.getHttp().getConnection());
-        }
-
         @Bean(name = "httpLogCollector", initMethod = "start", destroyMethod = "stop")
         @ConditionalOnMissingBean(name = "httpLogCollector")
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".http.enable", havingValue = "true")
-        public HttpLogCollector httpLogCollector(HttpClient logCollectorHttpClient) throws ReflectiveOperationException {
-            HttpLogCollector httpLogCollector = new HttpLogCollector(properties.getHttp().getUrl(), logCollectorHttpClient);
+        public HttpLogCollector httpLogCollector() throws ReflectiveOperationException {
+            HttpLogCollector httpLogCollector = new HttpLogCollector(properties.getHttp().getUrl(), LogHttpUtil.createHttpClient(properties.getHttp().getConnection()));
             setCustomProperties(httpLogCollector, properties.getHttp());
             ObjectMapper objectMapper = JsonLogUtil.createObjectMapper();
             configure(objectMapper, properties.getHttp().getJson());
