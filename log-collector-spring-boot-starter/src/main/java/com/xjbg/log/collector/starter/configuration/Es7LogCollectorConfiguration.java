@@ -33,9 +33,9 @@ public class Es7LogCollectorConfiguration extends LogCollectorRestClientBuilderC
     @Bean(value = "esLogCollector", initMethod = "start", destroyMethod = "stop")
     @ConditionalOnMissingBean(name = "esLogCollector")
     @ConditionalOnExpression(value = "${" + LogCollectorProperties.PREFIX + ".es.enable:false}&&'${" + LogCollectorProperties.PREFIX + ".es.version:7}'.equals('7')")
-    public Es7LogCollector esLogCollector(RestHighLevelClient logCollectorRestHighLevelClient) throws ReflectiveOperationException {
+    public Es7LogCollector esLogCollector() throws ReflectiveOperationException {
         LogCollectorProperties.EsLogCollectorCustomProperties propertiesEs = properties.getEs();
-        Es7LogCollector esLogCollector = new Es7LogCollector(logCollectorRestHighLevelClient);
+        Es7LogCollector esLogCollector = new Es7LogCollector(logCollectorRestHighLevelClient());
         ObjectMapper objectMapper = JsonLogUtil.createObjectMapper();
         logCollectorAutoConfiguration.configure(objectMapper, propertiesEs.getJson());
         esLogCollector.setObjectMapper(objectMapper);
@@ -52,9 +52,6 @@ public class Es7LogCollectorConfiguration extends LogCollectorRestClientBuilderC
         return esLogCollector;
     }
 
-    @Bean(name = "logCollectorRestHighLevelClient")
-    @ConditionalOnMissingBean(value = RestHighLevelClient.class)
-    @ConditionalOnExpression(value = "${" + LogCollectorProperties.PREFIX + ".es.enable:false}&&'${" + LogCollectorProperties.PREFIX + ".es.version:7}'.equals('7')")
     public RestHighLevelClient logCollectorRestHighLevelClient() {
         LogCollectorProperties.EsLogCollectorCustomProperties propertiesEs = properties.getEs();
         Object[] sslContext = propertiesEs.getConnection().isIgnoreHttps() ? LogHttpUtil.ignoreSslContext() : LogHttpUtil.sslContext(propertiesEs.getConnection().getCertFile());

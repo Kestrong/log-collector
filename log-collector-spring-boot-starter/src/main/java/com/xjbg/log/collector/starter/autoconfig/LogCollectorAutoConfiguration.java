@@ -26,10 +26,8 @@ import com.xjbg.log.collector.utils.JsonLogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cglib.beans.BeanMap;
@@ -61,7 +59,6 @@ import java.util.Set;
         LogCollectorRegisterConfiguration.class})
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
 @AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
-@AutoConfigureBefore(value = ElasticsearchRestClientAutoConfiguration.class)
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
 public class LogCollectorAutoConfiguration {
