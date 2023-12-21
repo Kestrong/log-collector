@@ -30,6 +30,7 @@ public class LogInfo implements Serializable {
     private String type;
     private String handleMethod;
     private String userAgent;
+    private String detail;
     private String requestId;
     private String requestIp;
     private String requestUrl;

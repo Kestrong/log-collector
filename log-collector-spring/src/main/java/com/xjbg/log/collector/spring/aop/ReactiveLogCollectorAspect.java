@@ -103,12 +103,10 @@ public class ReactiveLogCollectorAspect extends AbstractLogCollectorAspect imple
                             param.put(k, v);
                         }
                     });
-                    if (StringUtils.isBlank(collectorLog.detail())) {
-                        try {
-                            logInfoBuilder.params(toJson(param));
-                        } catch (Exception e) {
-                            logInfoBuilder.params(ExceptionUtil.getTraceInfo(e));
-                        }
+                    try {
+                        logInfoBuilder.params(toJson(param));
+                    } catch (Exception e) {
+                        logInfoBuilder.params(ExceptionUtil.getTraceInfo(e));
                     }
                     param.forEach(context::setVariable);
                     logRequest.clear();
@@ -132,7 +130,7 @@ public class ReactiveLogCollectorAspect extends AbstractLogCollectorAspect imple
                     }
                     String detail = getSpelValue(context, collectorLog.detail());
                     if (StringUtils.isNotBlank(collectorLog.detail())) {
-                        logInfoBuilder.params(detail);
+                        logInfoBuilder.detail(detail);
                     }
                     LogInfo logInfo = logInfoBuilder.build();
                     LogCollector logCollector = collectorLog.collector().isAssignableFrom(AbstractLogCollector.None.class) ? LogCollectors.defaultCollector() : LogCollectors.getCollector(collectorLog.collector());
@@ -150,12 +148,8 @@ public class ReactiveLogCollectorAspect extends AbstractLogCollectorAspect imple
             try {
                 Mono proceed = (Mono) pjp.proceed();
                 return mono.flatMap(x -> proceed).flatMap(x -> {
-                    if (StringUtils.isNotBlank(collectorLog.detail())) {
-                        logInfoBuilder.params(collectorLog.detail());
-                    } else {
-                        if (!collectorLog.ignoreResponse()) {
-                            logInfoBuilder.response(toJson(x));
-                        }
+                    if (!collectorLog.ignoreResponse()) {
+                        logInfoBuilder.response(toJson(x));
                     }
                     context.setVariable("RESPONSE", x);
                     return Mono.just(x);

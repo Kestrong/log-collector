@@ -87,8 +87,8 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
         if (sqlTemplate == null) {
             synchronized (this) {
                 if (sqlTemplate == null) {
-                    List<String> fields = Arrays.asList("log_id", "user_id", "tenant_id", "business_no", "application", "module", "action", "state", "type", "handle_method", "user_agent", "request_id", "request_ip", "request_url", "request_method", "request_time", "create_time", "response_time", "params", "response");
-                    sqlTemplate = String.format("INSERT INTO %s(%s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", wrap(getTableName()), fields.stream().map(this::wrap).collect(Collectors.joining(",")));
+                    List<String> fields = Arrays.asList("log_id", "user_id", "tenant_id", "business_no", "application", "module", "action", "state", "type", "handle_method", "user_agent", "detail", "request_id", "request_ip", "request_url", "request_method", "request_time", "create_time", "response_time", "params", "response");
+                    sqlTemplate = String.format("INSERT INTO %s(%s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", wrap(getTableName()), fields.stream().map(this::wrap).collect(Collectors.joining(",")));
                 }
             }
         }
@@ -118,6 +118,7 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
                 preparedStatement.setString(index++, logInfo.getType());
                 preparedStatement.setString(index++, logInfo.getHandleMethod());
                 preparedStatement.setString(index++, logInfo.getUserAgent());
+                preparedStatement.setString(index++, logInfo.getDetail());
                 preparedStatement.setString(index++, logInfo.getRequestId());
                 preparedStatement.setString(index++, logInfo.getRequestIp());
                 preparedStatement.setString(index++, logInfo.getRequestUrl());

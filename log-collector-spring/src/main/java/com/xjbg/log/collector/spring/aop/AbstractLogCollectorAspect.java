@@ -104,15 +104,13 @@ public abstract class AbstractLogCollectorAspect implements MethodInterceptor {
         Object response = null;
         boolean fail = false;
         Map<String, Object> logRequest = new HashMap<>();
-        LogInfo.LogInfoBuilder logInfoBuilder = LogInfo.builder().responseTime(new Date());
+        LogInfo.LogInfoBuilder logInfoBuilder = LogInfo.builder().requestTime(new Date());
         try {
             prepareLogRequest(logRequest, method.getParameters(), pjp.getArgs());
-            if (StringUtils.isBlank(collectorLog.detail())) {
-                try {
-                    logInfoBuilder.params(toJson(logRequest));
-                } catch (Exception e) {
-                    logInfoBuilder.params(ExceptionUtil.getTraceInfo(e));
-                }
+            try {
+                logInfoBuilder.params(toJson(logRequest));
+            } catch (Exception e) {
+                logInfoBuilder.params(ExceptionUtil.getTraceInfo(e));
             }
             Object proceed = pjp.proceed();
             if (!collectorLog.ignoreResponse()) {
@@ -146,7 +144,7 @@ public abstract class AbstractLogCollectorAspect implements MethodInterceptor {
                     }
                     String detail = getSpelValue(context, collectorLog.detail());
                     if (StringUtils.isNotBlank(collectorLog.detail())) {
-                        logInfoBuilder.params(detail);
+                        logInfoBuilder.detail(detail);
                     }
                     LogInfo logInfo = logInfoBuilder.userAgent(LogSpringHttpRequestUtil.getUserAgent())
                             .requestIp(LogSpringHttpRequestUtil.getRequestIp()).requestUrl(LogSpringHttpRequestUtil.getRequestURL()).requestMethod(LogSpringHttpRequestUtil.getRequestMethod())

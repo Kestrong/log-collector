@@ -43,7 +43,7 @@ public @interface CollectorLog {
     String handleMethod() default "";
 
     /**
-     * generated information, if present will replace params
+     * generated information
      */
     String detail() default "";
 
