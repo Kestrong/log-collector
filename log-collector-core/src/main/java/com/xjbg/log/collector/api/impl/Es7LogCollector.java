@@ -9,8 +9,9 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.Requests;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -38,7 +39,7 @@ public class Es7LogCollector extends AbstractEsLogCollector {
         BulkRequest bulkRequest = new BulkRequest();
         for (LogInfo logInfo : logInfos) {
             IndexRequest indexRequest = new IndexRequest();
-            indexRequest.id(logInfo.getLogId()).index(getIndex()).source(toJsonString(logInfo), XContentType.JSON);
+            indexRequest.id(logInfo.getLogId()).index(getIndex()).type(MapperService.SINGLE_MAPPING_NAME).source(toJsonString(logInfo), Requests.INDEX_CONTENT_TYPE);
             bulkRequest.add(indexRequest);
         }
         BulkResponse bulk = getHighLevelClient().bulk(bulkRequest, RequestOptions.DEFAULT);
