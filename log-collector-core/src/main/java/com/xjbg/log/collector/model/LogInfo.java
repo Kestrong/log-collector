@@ -58,6 +58,7 @@ public class LogInfo implements Serializable {
                 .add("type='" + type + "'")
                 .add("handleMethod='" + handleMethod + "'")
                 .add("userAgent='" + userAgent + "'")
+                .add("detail='" + detail + "'")
                 .add("requestId='" + requestId + "'")
                 .add("requestIp='" + requestIp + "'")
                 .add("requestUrl='" + requestUrl + "'")
