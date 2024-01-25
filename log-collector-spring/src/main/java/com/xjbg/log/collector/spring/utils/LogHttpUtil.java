@@ -4,6 +4,8 @@ import com.xjbg.log.collector.properties.LogCollectorProperties;
 import lombok.SneakyThrows;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.util.StringUtils;
 
@@ -101,11 +103,11 @@ public class LogHttpUtil {
                         .setConnectTimeout(connectionProperties.getConnectTimeout())
                         .setConnectionRequestTimeout(connectionProperties.getRequestTimeout()).build());
         if (connectionProperties.isIgnoreHttps()) {
-            httpClientBuilder.setSSLContext((SSLContext) ignoreSslContext()[0]);
+            httpClientBuilder.setSSLContext((SSLContext) ignoreSslContext()[0]).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
         } else {
             Object[] objects = sslContext(connectionProperties.getCertFile());
             if (objects != null) {
-                httpClientBuilder.setSSLContext((SSLContext) objects[0]);
+                httpClientBuilder.setSSLContext((SSLContext) objects[0]).setSSLHostnameVerifier(SSLConnectionSocketFactory.getDefaultHostnameVerifier());
             }
         }
         return httpClientBuilder.build();
