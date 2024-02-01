@@ -30,7 +30,7 @@ public class LogInfo implements Serializable {
     private String type;
     private String handleMethod;
     private String userAgent;
-    private String detail;
+    private String message;
     private String requestId;
     private String requestIp;
     private String requestUrl;
@@ -58,7 +58,7 @@ public class LogInfo implements Serializable {
                 .add("type='" + type + "'")
                 .add("handleMethod='" + handleMethod + "'")
                 .add("userAgent='" + userAgent + "'")
-                .add("detail='" + detail + "'")
+                .add("message='" + message + "'")
                 .add("requestId='" + requestId + "'")
                 .add("requestIp='" + requestIp + "'")
                 .add("requestUrl='" + requestUrl + "'")

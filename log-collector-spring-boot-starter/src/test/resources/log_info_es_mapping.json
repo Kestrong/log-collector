@@ -38,7 +38,7 @@
             }
           }
         },
-        "detail": {
+        "message": {
           "type": "text",
           "fields": {
             "keyword": {

@@ -45,7 +45,7 @@ public @interface CollectorLog {
     /**
      * generated information
      */
-    String detail() default "";
+    String message() default "";
 
     /**
      * log collector customized

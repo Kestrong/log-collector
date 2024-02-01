@@ -128,9 +128,9 @@ public class ReactiveLogCollectorAspect extends AbstractLogCollectorAspect imple
                     } else {
                         logInfoBuilder.handleMethod(pjp.getTarget().getClass().getName() + "#" + requestMethod);
                     }
-                    String detail = getSpelValue(context, collectorLog.detail());
-                    if (StringUtils.isNotBlank(collectorLog.detail())) {
-                        logInfoBuilder.detail(detail);
+                    String message = getSpelValue(context, collectorLog.message());
+                    if (StringUtils.isNotBlank(collectorLog.message())) {
+                        logInfoBuilder.message(message);
                     }
                     LogInfo logInfo = logInfoBuilder.build();
                     LogCollector logCollector = collectorLog.collector().isAssignableFrom(AbstractLogCollector.None.class) ? LogCollectors.defaultCollector() : LogCollectors.getCollector(collectorLog.collector());

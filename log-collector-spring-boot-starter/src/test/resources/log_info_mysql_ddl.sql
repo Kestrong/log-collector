@@ -11,7 +11,7 @@ CREATE TABLE `log_info`
     `type`           varchar(16)  DEFAULT NULL,
     `handle_method`  varchar(256) DEFAULT NULL,
     `user_agent`     varchar(256) DEFAULT NULL,
-    `detail`         varchar(512) DEFAULT NULL,
+    `message`         varchar(512) DEFAULT NULL,
     `request_id`     varchar(36)  DEFAULT NULL,
     `request_ip`     varchar(64)  DEFAULT NULL,
     `request_url`    varchar(512) DEFAULT NULL,
