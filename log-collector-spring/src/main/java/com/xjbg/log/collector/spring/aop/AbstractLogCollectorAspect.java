@@ -233,9 +233,6 @@ public abstract class AbstractLogCollectorAspect implements MethodInterceptor {
         if (StringUtils.isBlank(template)) {
             return null;
         }
-        if (!template.startsWith("#")) {
-            return template;
-        }
         try {
             Expression expression = parser.parseExpression(template);
             return String.valueOf(expression.getValue(context));
