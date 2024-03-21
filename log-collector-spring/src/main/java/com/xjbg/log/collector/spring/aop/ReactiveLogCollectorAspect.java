@@ -87,6 +87,11 @@ public class ReactiveLogCollectorAspect extends AbstractLogCollectorAspect imple
                     return Mono.just(x);
                 }).flatMap(x -> ReactiveRequestContextHolder.getRequestContext())
                 .flatMap(x -> {
+                    if (StringUtils.isNotBlank(collectorLog.requestUrl())) {
+                        logInfoBuilder.requestUrl(getSpelValue(context, collectorLog.requestUrl()));
+                    } else {
+                        logInfoBuilder.requestUrl(ReactiveLogHttpRequestUtil.getRequestURL(x.getRequest()));
+                    }
                     logInfoBuilder.userAgent(ReactiveLogHttpRequestUtil.getUserAgent(x.getRequest()))
                             .requestIp(ReactiveLogHttpRequestUtil.getRequestIp(x.getRequest())).
                             requestUrl(ReactiveLogHttpRequestUtil.getRequestURL(x.getRequest()))

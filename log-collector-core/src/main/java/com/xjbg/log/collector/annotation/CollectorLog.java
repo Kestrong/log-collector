@@ -48,6 +48,11 @@ public @interface CollectorLog {
     String message() default "";
 
     /**
+     * requestUrl
+     */
+    String requestUrl() default "";
+
+    /**
      * log collector customized
      */
     Class<? extends LogCollector<? extends LogInfo>> collector() default AbstractLogCollector.None.class;

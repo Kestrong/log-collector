@@ -146,8 +146,13 @@ public abstract class AbstractLogCollectorAspect implements MethodInterceptor {
                     if (StringUtils.isNotBlank(collectorLog.message())) {
                         logInfoBuilder.message(message);
                     }
+                    if (StringUtils.isNotBlank(collectorLog.requestUrl())) {
+                        logInfoBuilder.requestUrl(getSpelValue(context, collectorLog.requestUrl()));
+                    } else {
+                        logInfoBuilder.requestUrl(LogSpringHttpRequestUtil.getRequestURL());
+                    }
                     LogInfo logInfo = logInfoBuilder.userAgent(LogSpringHttpRequestUtil.getUserAgent())
-                            .requestIp(LogSpringHttpRequestUtil.getRequestIp()).requestUrl(LogSpringHttpRequestUtil.getRequestURL()).requestMethod(LogSpringHttpRequestUtil.getRequestMethod())
+                            .requestIp(LogSpringHttpRequestUtil.getRequestIp()).requestMethod(LogSpringHttpRequestUtil.getRequestMethod())
                             .state(fail ? LogState.FAIL.name() : LogState.SUCCESS.name()).response(toJson(response)).build();
                     LogCollector logCollector = collectorLog.collector().isAssignableFrom(AbstractLogCollector.None.class) ? LogCollectors.defaultCollector() : LogCollectors.getCollector(collectorLog.collector());
                     if (collectorLog.async()) {
