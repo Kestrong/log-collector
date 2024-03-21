@@ -1,26 +1,27 @@
 buildscript {
     repositories {
         maven {
+            allowInsecureProtocol = true
             url MAVEN_REPOSITORY_ALIYUN
         }
         maven {
+            allowInsecureProtocol = true
             url MAVEN_REPOSITORY_CENTRAL
         }
     }
 
     dependencies {
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.1.7.RELEASE'
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.2.2'
     }
 }
 
 plugins {
     id 'java'
-    id 'maven'
 }
 
 allprojects {
     group 'com.xjbg'
-    version '1.0.0-SNAPSHOT'
+    version '1.0.0-S3-SNAPSHOT'
 
     configurations.all {
         // 动态版本
@@ -31,31 +32,27 @@ allprojects {
 }
 
 def versionMap = [
-        "springCloudVersion": "2021.0.7",
-        "springboot"        : "2.7.12",
-        "mybatisPlusVersion": "3.3.1",
+        "springCloudVersion": "2023.0.0",
+        "springboot"        : "3.2.2",
         "nacos"             : "2.2.2.RELEASE",
-        "es"                : "8.5.1"
+        "es"                : "8.11.1"
 ]
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
-    apply plugin: 'maven'
     apply plugin: 'maven-publish'
-    apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
-
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
     repositories {
         maven {
+            allowInsecureProtocol = true
             url MAVEN_REPOSITORY_ALIYUN
         }
         maven {
+            allowInsecureProtocol = true
             url MAVEN_REPOSITORY_CENTRAL
         }
     }
@@ -73,7 +70,12 @@ subprojects {
                     username MAVEN_REPOSITORY_USER
                     password MAVEN_REPOSITORY_PWD
                 }
-                url MAVEN_REPOSITORY_SNAPSHOT
+                allowInsecureProtocol = true
+                if(project.version.endsWith('-SNAPSHOT')) {
+                    url MAVEN_REPOSITORY_SNAPSHOT
+                } else {
+                    url MAVEN_REPOSITORY_RELEASE
+                }
             }
         }
         publications {
@@ -102,9 +104,8 @@ subprojects {
 
     dependencyManagement {
         dependencies {
-            dependency 'org.projectlombok:lombok:1.18.12'
+            dependency 'org.projectlombok:lombok:1.18.30'
             dependency group: 'junit', name: 'junit', version: '4.13'
-            dependency 'ch.qos.logback:logback-classic:1.2.3'
             dependency 'org.openjdk.jol:jol-core:0.17'
             dependency 'jakarta.json:jakarta.json-api:2.1.1'
             dependency 'org.apache.commons:commons-lang3:3.9'
@@ -115,10 +116,10 @@ subprojects {
             dependency "org.elasticsearch.client:elasticsearch-rest-high-level-client:7.5.1"
             dependency "co.elastic.clients:elasticsearch-java:$versionMap.es"
             dependency 'io.github.openfeign:feign-httpclient:11.10'
+            dependency 'org.apache.httpcomponents:httpclient:4.5.14'
             dependency 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix:2.2.6.RELEASE'
             dependency "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:$versionMap.nacos"
             dependency "com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:$versionMap.nacos"
-            dependency "org.springframework.boot:spring-boot-starter-validation:$versionMap.springboot"
         }
         imports {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:$versionMap.springCloudVersion"

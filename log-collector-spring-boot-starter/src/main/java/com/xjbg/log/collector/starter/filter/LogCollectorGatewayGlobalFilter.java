@@ -14,7 +14,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.util.MultiValueMap;
@@ -100,7 +100,7 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
                 LogCollectors.defaultCollector().logAsync(builder
                         .responseTime(new Date())
                         .userAgent(request.getHeaders().getFirst("User-Agent"))
-                        .requestMethod(request.getMethodValue())
+                        .requestMethod(request.getMethod().name())
                         .requestIp(getRequestIp(request))
                         .params(JsonLogUtil.toJson(payload)).build());
             } catch (Exception e) {
@@ -165,7 +165,7 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
                     if (content != null && content.length > 0) {
                         builder.response(new String(content));
                     }
-                    HttpStatus rawStatusCode = httpResponseDecorator.getStatusCode();
+                    HttpStatusCode rawStatusCode = httpResponseDecorator.getStatusCode();
                     if (rawStatusCode != null && rawStatusCode.value() < 300) {
                         builder.state(LogState.SUCCESS.name());
                     } else {

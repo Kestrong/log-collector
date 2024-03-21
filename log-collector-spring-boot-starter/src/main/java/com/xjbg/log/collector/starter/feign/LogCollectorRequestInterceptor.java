@@ -6,7 +6,7 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.util.CollectionUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 
 /**

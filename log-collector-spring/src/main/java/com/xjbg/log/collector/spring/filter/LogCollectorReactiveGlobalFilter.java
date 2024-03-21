@@ -15,7 +15,7 @@ import com.xjbg.log.collector.utils.ReactiveLogContextHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.NonNull;
@@ -134,7 +134,7 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
                     if (content != null && content.length > 0) {
                         builder.response(new String(content));
                     }
-                    HttpStatus rawStatusCode = httpResponseDecorator.getStatusCode();
+                    HttpStatusCode rawStatusCode = httpResponseDecorator.getStatusCode();
                     if (rawStatusCode != null && rawStatusCode.value() < 300) {
                         builder.state(LogState.SUCCESS.name());
                     } else {

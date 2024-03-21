@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.WebFilter;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;

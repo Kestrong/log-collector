@@ -74,7 +74,7 @@ public class ReactiveLogHttpRequestUtil {
             if (request == null) {
                 return null;
             }
-            return request.getMethodValue();
+            return request.getMethod().name();
         } catch (Exception e) {
             return null;
         }

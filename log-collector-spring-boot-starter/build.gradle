@@ -1,5 +1,4 @@
 jar.enabled = true
-bootJar.enabled = false
 
 dependencies {
     api project(':log-collector-spring')
