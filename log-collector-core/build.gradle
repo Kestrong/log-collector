@@ -6,6 +6,7 @@ dependencies {
     api 'org.apache.commons:commons-lang3'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'jakarta.json:jakarta.json-api'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     compileOnly 'co.elastic.clients:elasticsearch-java'
     compileOnly 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
     compileOnly 'jakarta.servlet:jakarta.servlet-api'

@@ -24,11 +24,13 @@ import org.springframework.core.Ordered;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +60,30 @@ public class ReactiveLogCollectorAspect extends AbstractLogCollectorAspect imple
             }
         }
         return false;
+    }
+
+    @Override
+    protected void prepareLogRequest(Map<String, Object> logRequest, Parameter[] parameters, Object[] args) {
+        if (parameters == null || parameters.length == 0) {
+            return;
+        }
+        for (int i = 0, n = parameters.length; i < n; i++) {
+            Object parameter = args != null && args.length - 1 >= i ? args[i] : null;
+            if (getAnnotation(parameters[i].getAnnotations(), CollectorLog.Ignore.class) != null) {
+                continue;
+            }
+            String parameterName = parameters[i].getName();
+            if (parameter instanceof MultipartFile) {
+                logRequest.put(parameterName, ((MultipartFile) parameter).getOriginalFilename());
+            } else {
+                CollectorLog.Sensitive sensitive = parameters[i].getAnnotation(CollectorLog.Sensitive.class);
+                if (sensitive != null && parameter instanceof String) {
+                    logRequest.put(parameterName, sensitive.strategy().apply((String) parameter));
+                } else {
+                    logRequest.put(parameterName, parameter);
+                }
+            }
+        }
     }
 
     @Around(value = "log()")
