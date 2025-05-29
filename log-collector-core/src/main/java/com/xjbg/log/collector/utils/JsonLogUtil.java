@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.xjbg.log.collector.enums.NamingStrategy;
 import com.xjbg.log.collector.sensitive.SensitiveLogAnnotationIntrospector;
 import lombok.SneakyThrows;
@@ -33,7 +34,7 @@ public class JsonLogUtil {
         objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         SimpleModule module = new SimpleModule();
         module.addSerializer(BigDecimal.class, ToStringSerializer.instance);
-        objectMapper.registerModules(module);
+        objectMapper.registerModules(module, new JavaTimeModule());
         AnnotationIntrospector ai = objectMapper.getSerializationConfig().getAnnotationIntrospector();
         AnnotationIntrospector newAi = AnnotationIntrospectorPair.pair(ai, new SensitiveLogAnnotationIntrospector());
         objectMapper.setAnnotationIntrospector(newAi);

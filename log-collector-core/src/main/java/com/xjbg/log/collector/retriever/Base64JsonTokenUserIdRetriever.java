@@ -34,6 +34,9 @@ public class Base64JsonTokenUserIdRetriever extends UserIdRetriever {
             try {
                 String body = new String(Base64.getUrlDecoder().decode(base64EncodedBody.getBytes()), charset);
                 Map value = JsonLogUtil.getDefaultObjectMapper().readerFor(Map.class).readValue(body);
+                if (value.get(userPropertyName) == null) {
+                    return null;
+                }
                 return String.valueOf(value.get(userPropertyName));
             } catch (Exception e) {
                 log.error(e.getMessage());
