@@ -10,9 +10,9 @@ import javax.sql.DataSource;
 import java.io.Reader;
 import java.io.StringReader;
 import java.sql.*;
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -83,12 +83,29 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
         return getWrapper() + name + getWrapper();
     }
 
+    public String parseTableName(Date requestTime) {
+        String tableName = getTableName();
+        if (!tableName.contains("{")) {
+            return tableName;
+        }
+        if (tableName.contains("{yyyyMMdd}")) {
+            tableName = tableName.replace("{yyyyMMdd}", new SimpleDateFormat("yyyyMMdd").format(requestTime));
+        }
+        if (tableName.contains("{yyyyMM}")) {
+            tableName = tableName.replace("{yyyyMM}", new SimpleDateFormat("yyyyMM").format(requestTime));
+        }
+        if (tableName.contains("{yyyy}")) {
+            tableName = tableName.replace("{yyyy}", new SimpleDateFormat("yyyy").format(requestTime));
+        }
+        return tableName;
+    }
+
     private String getInsertSqlTemplate() {
         if (sqlTemplate == null) {
             synchronized (this) {
                 if (sqlTemplate == null) {
                     List<String> fields = Arrays.asList("log_id", "user_id", "tenant_id", "business_no", "application", "module", "action", "state", "type", "handle_method", "user_agent", "message", "request_id", "request_ip", "request_url", "request_method", "request_time", "create_time", "response_time", "params", "response");
-                    sqlTemplate = String.format("INSERT INTO %s(%s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", wrap(getTableName()), fields.stream().map(this::wrap).collect(Collectors.joining(",")));
+                    sqlTemplate = String.format("INSERT INTO %s(%s) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", "%s", fields.stream().map(this::wrap).collect(Collectors.joining(",")));
                 }
             }
         }
@@ -99,13 +116,20 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
     protected void doLog(List<LogInfo> logInfos) throws Exception {
         Connection conn = null;
         Boolean connAutoCommit = null;
-        PreparedStatement preparedStatement = null;
+        Map<String, PreparedStatement> preparedStatementMap = new HashMap<>();
         try {
             conn = dataSource.getConnection();
             connAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(getInsertSqlTemplate());
             for (LogInfo logInfo : logInfos) {
+                String tableName = wrap(parseTableName(logInfo.getRequestTime()));
+                PreparedStatement preparedStatement;
+                if (preparedStatementMap.containsKey(tableName)) {
+                    preparedStatement = preparedStatementMap.get(tableName);
+                } else {
+                    preparedStatement = conn.prepareStatement(String.format(getInsertSqlTemplate(), tableName));
+                    preparedStatementMap.put(tableName, preparedStatement);
+                }
                 int index = 1;
                 preparedStatement.setString(index++, logInfo.getLogId());
                 preparedStatement.setString(index++, logInfo.getUserId());
@@ -145,7 +169,9 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
                 }
                 preparedStatement.addBatch();
             }
-            preparedStatement.executeBatch();
+            for (PreparedStatement preparedStatement : preparedStatementMap.values()) {
+                preparedStatement.executeBatch();
+            }
             conn.commit();
         } catch (Exception e) {
             if (conn != null) {
@@ -153,7 +179,10 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
             }
             throw e;
         } finally {
-            closeDbResource(conn, preparedStatement, connAutoCommit);
+            for (PreparedStatement preparedStatement : preparedStatementMap.values()) {
+                closeDbResource(null, preparedStatement, null);
+            }
+            closeDbResource(conn, null, connAutoCommit);
         }
     }
 
@@ -167,7 +196,7 @@ public class DataBaseLogCollector extends AbstractLogCollector<LogInfo, LogInfo>
             conn = dataSource.getConnection();
             connAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(String.format("delete from %s where %s <=? and %s =?", wrap(getTableName()), wrap("create_time"), wrap("application")));
+            preparedStatement = conn.prepareStatement(String.format("delete from %s where %s <=? and %s =?", wrap(parseTableName(before)), wrap("create_time"), wrap("application")));
             preparedStatement.setTimestamp(1, new Timestamp(before.getTime()));
             preparedStatement.setString(2, LogCollectorConstant.APPLICATION);
             preparedStatement.execute();

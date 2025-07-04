@@ -66,6 +66,14 @@ public class JsonLogUtil {
         return objectMapper.writeValueAsString(o);
     }
 
+    @SneakyThrows
+    public static <T> T fromJson(String json, Class<T> clazz) {
+        if (json == null) {
+            return null;
+        }
+        return objectMapper.readValue(json, clazz);
+    }
+
     public static String translate(String name, NamingStrategy namingStrategy) {
         String translateName;
         switch (namingStrategy) {
