@@ -61,7 +61,7 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     builder.response(exception).state(LogState.FAIL.name());
                 } else {
                     byte[] content = response.getContent();
-                    builder.response(content == null || content.length == 0 ? null : new String(content)).state(response.getStatus() < 300 ? LogState.SUCCESS.name() : LogState.FAIL.name());
+                    builder.response(content == null || content.length == 0 ? null : new String(content)).state(response.getStatus() < 400 ? LogState.SUCCESS.name() : LogState.FAIL.name());
                 }
                 LogCollectors.defaultCollector().logAsync(builder.responseTime(new Date()).userAgent(LogHttpRequestUtil.getUserAgent(request)).requestUrl(LogHttpRequestUtil.getRequestURL(request)).requestMethod(LogHttpRequestUtil.getRequestMethod(request)).requestIp(LogHttpRequestUtil.getRequestIp(request)).params(JsonLogUtil.toJson(payload)).build());
             } catch (Exception e) {
@@ -128,7 +128,9 @@ public class LogCollectorGlobalFilter extends AbstractLogCollectorGlobalFilter i
                     logContextBuilder.userId(userId);
                 }
                 //do tenant
-                logContextBuilder.tenantId(httpServletRequest.getHeader(properties.getFilter().getTenantHeaderName()));
+                String tenantId = httpServletRequest.getHeader(properties.getFilter().getTenantHeaderName());
+                logContextBuilder.tenantId(tenantId);
+                builder.tenantId(tenantId);
             } catch (Exception e) {
                 log.error(e.getMessage());
             }

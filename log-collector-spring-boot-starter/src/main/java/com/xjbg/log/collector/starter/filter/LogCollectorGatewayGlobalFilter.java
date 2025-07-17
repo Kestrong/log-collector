@@ -166,7 +166,7 @@ public class LogCollectorGatewayGlobalFilter extends AbstractLogCollectorGlobalF
                         builder.response(new String(content));
                     }
                     HttpStatus rawStatusCode = httpResponseDecorator.getStatusCode();
-                    if (rawStatusCode != null && rawStatusCode.value() < 300) {
+                    if (rawStatusCode != null && rawStatusCode.value() < 400) {
                         builder.state(LogState.SUCCESS.name());
                     } else {
                         builder.state(LogState.FAIL.name());
