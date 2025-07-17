@@ -117,7 +117,9 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
                 logContextBuilder.userId(userId);
                 builder.userId(userId);
             }
-            logContextBuilder.tenantId(httpRequest.getHeaders().getFirst(properties.getFilter().getTenantHeaderName()));
+            String tenantId = httpRequest.getHeaders().getFirst(properties.getFilter().getTenantHeaderName());
+            logContextBuilder.tenantId(tenantId);
+            builder.tenantId(tenantId);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -135,7 +137,7 @@ public class LogCollectorReactiveGlobalFilter extends AbstractLogCollectorGlobal
                         builder.response(new String(content));
                     }
                     HttpStatusCode rawStatusCode = httpResponseDecorator.getStatusCode();
-                    if (rawStatusCode != null && rawStatusCode.value() < 300) {
+                    if (rawStatusCode != null && rawStatusCode.value() < 400) {
                         builder.state(LogState.SUCCESS.name());
                     } else {
                         builder.state(LogState.FAIL.name());
