@@ -3,6 +3,7 @@ package com.xjbg.log.collector.channel;
 import com.xjbg.log.collector.model.LogInfo;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author kesc
@@ -28,13 +29,15 @@ public class MemoryChannel<T extends LogInfo> extends Channel<T> {
     }
 
     @Override
-    protected void doPush(T r) throws Exception {
-        this.queue.put(r);
+    protected void doOffer(T r) throws Exception {
+        if (!this.queue.offer(r)) {
+            throw new InterruptedException("Failed to push record because of queue is full");
+        }
     }
 
     @Override
-    protected T doPull() throws Exception {
-        return this.queue.take();
+    protected T doPoll() throws Exception {
+        return this.queue.poll(200L, TimeUnit.MILLISECONDS);
     }
 
     @Override

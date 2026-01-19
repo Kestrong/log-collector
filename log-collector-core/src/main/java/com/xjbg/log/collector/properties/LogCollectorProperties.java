@@ -23,6 +23,14 @@ public class LogCollectorProperties {
      */
     private String application;
     /**
+     * the name of your group
+     */
+    private String group;
+    /**
+     * the name of your topic
+     */
+    private String topic;
+    /**
      * expression of spring advisor
      */
     private String pointcut;
@@ -45,6 +53,7 @@ public class LogCollectorProperties {
     private HttpLogCollectorCustomProperties http = new HttpLogCollectorCustomProperties();
     private EsLogCollectorCustomProperties es = new EsLogCollectorCustomProperties();
     private FeignLogCollectorCustomProperties feign = new FeignLogCollectorCustomProperties();
+    private KafkaLogCollectorCustomProperties kafka = new KafkaLogCollectorCustomProperties();
 
     @Getter
     @Setter
@@ -192,6 +201,12 @@ public class LogCollectorProperties {
         private String method;
         private String path;
         private String url = "";
+    }
+
+    @Getter
+    @Setter
+    public static class KafkaLogCollectorCustomProperties extends LogCollectorCustomProperties {
+        private String topic;
     }
 
 }

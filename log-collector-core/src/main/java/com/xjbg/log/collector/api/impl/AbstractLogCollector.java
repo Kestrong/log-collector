@@ -6,6 +6,7 @@ import com.xjbg.log.collector.api.LogCollector;
 import com.xjbg.log.collector.channel.Channel;
 import com.xjbg.log.collector.channel.MemoryChannel;
 import com.xjbg.log.collector.enums.RejectPolicy;
+import com.xjbg.log.collector.model.LogContext;
 import com.xjbg.log.collector.model.LogInfo;
 import com.xjbg.log.collector.transformer.DefaultLogTransformer;
 import com.xjbg.log.collector.transformer.LogTransformer;
@@ -26,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings(value = {"unused", "unchecked", "rawtypes"})
 public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogCollector<T> {
     protected final Logger log = LoggerFactory.getLogger(getClass());
+    private String group;
+    private String topic;
     private String fallbackCollector;
     private String nextCollector;
     private Channel<T> channel;
@@ -58,14 +61,15 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
         if (StringUtils.isBlank(logInfo.getLogId())) {
             logInfo.setLogId(UUID.randomUUID().toString());
         }
+        Optional<LogContext> logContext = LogContextHolder.getContext();
         if (StringUtils.isBlank(logInfo.getRequestId())) {
-            logInfo.setRequestId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getRequestId())).orElse(null));
+            logInfo.setRequestId(logContext.flatMap(x -> Optional.ofNullable(x.getRequestId())).orElse(null));
         }
         if (StringUtils.isBlank(logInfo.getUserId())) {
-            logInfo.setUserId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getUserId())).orElse(null));
+            logInfo.setUserId(logContext.flatMap(x -> Optional.ofNullable(x.getUserId())).orElse(null));
         }
         if (StringUtils.isBlank(logInfo.getTenantId())) {
-            logInfo.setTenantId(LogContextHolder.getContext().flatMap(x -> Optional.ofNullable(x.getTenantId())).orElse(null));
+            logInfo.setTenantId(logContext.flatMap(x -> Optional.ofNullable(x.getTenantId())).orElse(null));
         }
         if (StringUtils.isBlank(logInfo.getApplication())) {
             logInfo.setApplication(LogCollectorConstant.APPLICATION);
@@ -76,16 +80,18 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
 
     @Override
     public boolean log(T logInfo) {
+        boolean flag = false;
         try {
             completeLogInfo(logInfo);
             doLog(Collections.singletonList(doTransform(logInfo)));
-            return true;
+            flag = true;
+            return flag;
         } catch (Exception e) {
             log.warn("log occur error, the reason maybe: {}", e.getMessage());
             logAsyncFallback(logInfo);
-            return false;
+            return flag;
         } finally {
-            if (getNextCollector() != null) {
+            if (flag && getNextCollector() != null) {
                 getNextCollector().log(logInfo);
             }
         }
@@ -94,24 +100,27 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
     @Override
     public boolean logBatch(List<T> logInfos) {
         List<R> transformLogs = new ArrayList<>();
+        List<T> successTransformLogs = new ArrayList<>();
         for (T logInfo : logInfos) {
             try {
                 transformLogs.add(doTransform(completeLogInfo(logInfo)));
+                successTransformLogs.add(logInfo);
             } catch (Exception e) {
                 log.warn("log transform error, the reason maybe: {}", e.getMessage());
                 logAsyncFallback(logInfo);
-                logInfos.remove(logInfo);
             }
         }
+        boolean flag = false;
         try {
             doLog(transformLogs);
-            return true;
+            flag = true;
+            return flag;
         } catch (Exception e) {
             log.warn("log batch occur error, the reason maybe: {}", e.getMessage());
-            logInfos.forEach(this::logAsyncFallback);
-            return false;
+            successTransformLogs.forEach(this::logAsyncFallback);
+            return flag;
         } finally {
-            if (getNextCollector() != null) {
+            if (flag && getNextCollector() != null) {
                 getNextCollector().logBatch(logInfos);
             }
         }
@@ -131,34 +140,41 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
         return channel.size() >= channel.getCapacity() * channel.getThreshold();
     }
 
+    protected boolean handleRejectPolicy(T logInfo) {
+        boolean needContinue = false;
+        switch (getRejectPolicy()) {
+            case CALLER_RUNS:
+                log(logInfo);
+                break;
+            case DISCARD:
+            case NOOP:
+                break;
+            case DISCARD_OLDEST:
+                try {
+                    T t = channel.poll();
+                } catch (Exception e) {
+                    log.warn("Failed to discard oldest log entry:{}", e.getMessage());
+                }
+                needContinue = true;
+                break;
+            default:
+                logAsyncFallback(logInfo);
+                break;
+        }
+        return needContinue;
+    }
+
     @Override
     public void logAsync(T logInfo) {
+        completeLogInfo(logInfo);
         if (isExceedThreadHold()) {
-            RejectPolicy rejectPolicy = getRejectPolicy();
-            if (RejectPolicy.CALLER_RUNS.equals(rejectPolicy)) {
-                log(logInfo);
-                return;
-            }
-            if (RejectPolicy.DISCARD.equals(rejectPolicy)) {
-                return;
-            }
-            if (RejectPolicy.FALLBACK.equals(rejectPolicy)) {
-                logAsyncFallback(logInfo);
-                return;
-            }
-            if (RejectPolicy.DISCARD_OLDEST.equals(rejectPolicy)) {
-                try {
-                    T t = channel.pull();
-                } catch (Exception e) {
-                    //ignore
-                }
-                logAsync(logInfo);
+            boolean needContinue = handleRejectPolicy(logInfo);
+            if (!needContinue) {
                 return;
             }
         }
         try {
-            completeLogInfo(logInfo);
-            channel.push(logInfo);
+            channel.offer(logInfo);
         } catch (Exception e) {
             log.warn("log async occur error, the reason maybe: {}", e.getMessage());
             logAsyncFallback(logInfo);
@@ -204,7 +220,10 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
                             }
                         }
                         if (buffer.size() < getBatchSize()) {
-                            buffer.add(channel.pull());
+                            T pulled = channel.poll();
+                            if (pulled != null) {
+                                buffer.add(pulled);
+                            }
                         }
                         if (buffer.size() >= getBatchSize()) {
                             List<T> temp = new ArrayList<>(buffer);
@@ -219,7 +238,7 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
                         log.error(e.getMessage());
                     }
                 }
-                if (buffer.size() > 0) {
+                if (!buffer.isEmpty()) {
                     logBatch(new ArrayList<>(buffer));
                     buffer.clear();
                 }
@@ -264,11 +283,6 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
                     log.error(e.getMessage());
                 }
                 pool = null;
-            }
-            try {
-                getChannel().clear();
-            } catch (Exception e) {
-                //ignore
             }
             start = false;
         }
@@ -335,6 +349,22 @@ public abstract class AbstractLogCollector<T extends LogInfo, R> implements LogC
 
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public static abstract class None implements LogCollector<LogInfo> {

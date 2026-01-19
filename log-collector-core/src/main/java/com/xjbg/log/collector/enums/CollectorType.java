@@ -12,7 +12,7 @@ public enum CollectorType {
     TCP,
     ES,
     REDIS,
-    MQ,
+    KAFKA,
     FEIGN,
     FILE,
     OTHER;

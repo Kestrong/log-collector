@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -52,13 +53,14 @@ import java.util.Set;
  */
 @Slf4j
 @Import(value = {LogCollectorAopConfiguration.class,
+        KafkaLogCollectorConfiguration.class,
         Es8LogCollectorConfiguration.class,
         Es7LogCollectorConfiguration.class,
         LogCollectorRefreshConfiguration.class,
         LogCollectorFeignConfiguration.class,
         LogCollectorRegisterConfiguration.class})
 @AutoConfigureOrder(value = Integer.MAX_VALUE)
-@AutoConfigureAfter(value = DataSourceAutoConfiguration.class)
+@AutoConfigureAfter(value = {DataSourceAutoConfiguration.class, KafkaAutoConfiguration.class})
 @Configuration
 @SuppressWarnings(value = {"unchecked", "rawtypes"})
 public class LogCollectorAutoConfiguration {
@@ -317,11 +319,18 @@ public class LogCollectorAutoConfiguration {
         }
     }
 
+    public void setGlobalProperties(AbstractLogCollector abstractLogCollector, LogCollectorProperties properties) {
+        abstractLogCollector.setGroup(properties.getGroup());
+        abstractLogCollector.setTopic(properties.getTopic());
+    }
+
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".enable", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean(name = "noopLogCollector")
     public NoopLogCollector noopLogCollector() {
-        return new NoopLogCollector();
+        NoopLogCollector noopLogCollector = new NoopLogCollector();
+        setGlobalProperties(noopLogCollector, properties);
+        return noopLogCollector;
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -330,6 +339,7 @@ public class LogCollectorAutoConfiguration {
     public CommonLogCollector commonLogCollector() throws ReflectiveOperationException {
         CommonLogCollector commonLogCollector = new CommonLogCollector();
         properties.getCommon().setEnable(true);
+        setGlobalProperties(commonLogCollector, properties);
         setCustomProperties(commonLogCollector, properties.getCommon());
         return commonLogCollector;
     }
@@ -340,6 +350,7 @@ public class LogCollectorAutoConfiguration {
     public DataBaseLogCollector dataBaseLogCollector(DataSource logCollectorDataSource) throws
             ReflectiveOperationException {
         DataBaseLogCollector dataBaseLogCollector = new DataBaseLogCollector(logCollectorDataSource);
+        setGlobalProperties(dataBaseLogCollector, properties);
         setCustomProperties(dataBaseLogCollector, properties.getDatabase());
         if (StringUtils.hasText(properties.getDatabase().getWrapper())) {
             dataBaseLogCollector.setWrapper(properties.getDatabase().getWrapper());
@@ -359,6 +370,7 @@ public class LogCollectorAutoConfiguration {
         @ConditionalOnProperty(name = LogCollectorProperties.PREFIX + ".http.enable", havingValue = "true")
         public HttpLogCollector httpLogCollector() throws ReflectiveOperationException {
             HttpLogCollector httpLogCollector = new HttpLogCollector(properties.getHttp().getUrl(), LogHttpUtil.createHttpClient(properties.getHttp().getConnection()));
+            setGlobalProperties(httpLogCollector, properties);
             setCustomProperties(httpLogCollector, properties.getHttp());
             ObjectMapper objectMapper = JsonLogUtil.createObjectMapper();
             configure(objectMapper, properties.getHttp().getJson());

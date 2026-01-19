@@ -66,20 +66,20 @@ public abstract class Channel<T extends LogInfo> {
 
     }
 
-    public void push(final T r) throws Exception {
+    public void offer(final T r) throws Exception {
         Validate.notNull(r, "record不能为空.");
-        this.doPush(r);
+        this.doOffer(r);
     }
 
-    public T pull() throws Exception {
-        T record = this.doPull();
+    public T poll() throws Exception {
+        T record = this.doPoll();
         this.statPull(1L, walker.walk(record).totalSize());
         return record;
     }
 
-    protected abstract void doPush(T r) throws Exception;
+    protected abstract void doOffer(T r) throws Exception;
 
-    protected abstract T doPull() throws Exception;
+    protected abstract T doPoll() throws Exception;
 
     public abstract int size();
 

@@ -66,6 +66,7 @@ public class LogCollectorFeignConfiguration {
             FeignLogCollector feignLogCollector = new FeignLogCollector(feignLogCollectorClient);
             LogCollectorProperties.FeignLogCollectorCustomProperties propertiesFeign = properties.getFeign();
             logCollectorAutoConfiguration.setCustomProperties(feignLogCollector, propertiesFeign);
+            logCollectorAutoConfiguration.setGlobalProperties(feignLogCollector, properties);
             if (StringUtils.hasText(propertiesFeign.getMethod())) {
                 feignLogCollector.setMethod(propertiesFeign.getMethod());
             }
