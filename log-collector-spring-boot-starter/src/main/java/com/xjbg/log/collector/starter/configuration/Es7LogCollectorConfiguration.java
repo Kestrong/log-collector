@@ -40,6 +40,7 @@ public class Es7LogCollectorConfiguration extends LogCollectorRestClientBuilderC
         logCollectorAutoConfiguration.configure(objectMapper, propertiesEs.getJson());
         esLogCollector.setObjectMapper(objectMapper);
         logCollectorAutoConfiguration.setCustomProperties(esLogCollector, propertiesEs);
+        logCollectorAutoConfiguration.setGlobalProperties(esLogCollector, properties);
         if (StringUtils.hasText(propertiesEs.getIndex())) {
             esLogCollector.setIndex(propertiesEs.getIndex());
         }

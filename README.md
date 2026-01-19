@@ -1,6 +1,6 @@
 # log-collector 
 
-一款轻量级日志收集框架，可以通过注解自动或者编程方式手动将日志信息存储到日志文件、数据库、elasticsearch、
+一款轻量级日志收集框架，可以通过注解自动或者编程方式手动将日志信息存储到日志文件、数据库、elasticsearch、kafka、
 http和feign方式转发到第三方服务等，支持定制自己的收集器。同时还提供全链路id和用户登录信息在微服务间传递的功能。
 
 ## quick start
@@ -121,6 +121,8 @@ log:
   collector:
     enable: true #是否启用 默认true
     application: ${spring.application.name} #应用的名称
+    group: DEFAULT_GROUP
+    topic: DEFAULT_TOPIC
     defaultCollectorType: feign #默认收集器的类型 内置默认可选类型[noop|common|database|http|es|feign]
     ignore-properties: #json序列化时忽略的属性
     clean-up: true #是否定时清理日志 仅databse和es支持 默认false
@@ -214,6 +216,8 @@ log:
       name: ${spring.application.name} #微服务注册中心实例名称
       path: /user/log-info #接口
       url: http://localhost:8080 #请求地址 默认为空使用name去解析
+    kafka:
+      enable: true  
 ```
 
 ### 依赖组件信息
@@ -242,3 +246,5 @@ log:
 * com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2.2.2.RELEASE
 * org.springframework.cloud:spring-cloud-dependencies:2021.0.7
 * org.springframework.boot:spring-boot-dependencies:2.7.12
+* org.apache.kafka:kafka-clients:3.6.2
+* org.springframework.kafka:spring-kafka:2.8.11

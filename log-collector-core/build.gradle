@@ -12,4 +12,5 @@ dependencies {
     compileOnly 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
     compileOnly 'io.projectreactor:reactor-core'
+    compileOnly 'org.apache.kafka:kafka-clients'
 }

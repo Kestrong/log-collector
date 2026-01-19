@@ -16,6 +16,7 @@ dependencies {
     compileOnly 'org.elasticsearch.client:elasticsearch-rest-high-level-client'
     compileOnly('org.springframework.cloud:spring-cloud-starter-gateway')
     compileOnly 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
+    compileOnly 'org.springframework.kafka:spring-kafka'
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
@@ -40,4 +41,5 @@ dependencies {
     testImplementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config'
     testImplementation 'org.springframework.cloud:spring-cloud-loadbalancer'
     testImplementation 'org.openjdk.jol:jol-core'
+    testImplementation 'org.springframework.kafka:spring-kafka'
 }

@@ -48,6 +48,8 @@ log:
   collector:
     enable: true #是否启用 默认true
     application: ${spring.application.name} #应用的名称
+    group: DEFAULT_GROUP
+    topic: DEFAULT_TOPIC
     defaultCollectorType: common #默认收集器的类型 内置默认可选类型[noop|common|database|http|es|feign]
     ignore-properties: #json序列化时忽略的属性
     clean-up: true #是否定时清理日志 仅databse和es支持 默认false
@@ -139,6 +141,8 @@ log:
       name: ${spring.application.name} #微服务注册中心实例名称
       path: /user/log-info #接口
       url: http://localhost:8080 #请求地址 默认为空使用name去解析
+    kafka:
+      enable: true
 
 logging:
   level:

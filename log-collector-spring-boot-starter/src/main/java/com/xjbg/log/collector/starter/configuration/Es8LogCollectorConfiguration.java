@@ -37,6 +37,7 @@ public class Es8LogCollectorConfiguration extends LogCollectorRestClientBuilderC
         Es8LogCollector esLogCollector = new Es8LogCollector(logCollectorElasticsearchClient);
         LogCollectorProperties.EsLogCollectorCustomProperties propertiesEs = properties.getEs();
         logCollectorAutoConfiguration.setCustomProperties(esLogCollector, propertiesEs);
+        logCollectorAutoConfiguration.setGlobalProperties(esLogCollector, properties);
         if (StringUtils.hasText(propertiesEs.getIndex())) {
             esLogCollector.setIndex(propertiesEs.getIndex());
         }
