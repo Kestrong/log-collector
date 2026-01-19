@@ -246,5 +246,5 @@ log:
 * com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2.2.2.RELEASE
 * org.springframework.cloud:spring-cloud-dependencies:2021.0.7
 * org.springframework.boot:spring-boot-dependencies:2.7.12
-* org.apache.kafka:kafka-clients:3.6.2
-* org.springframework.kafka:spring-kafka:2.8.11
+* org.apache.kafka:kafka-clients:4.1.1
+* org.springframework.kafka:spring-kafka:3.1.1
